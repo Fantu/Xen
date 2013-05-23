@@ -2662,6 +2662,205 @@ int main_cd_insert(int argc, char **argv)
     return 0;
 }
 
+static int parse_usb_specifier(libxl_device_usb *dev, char *s)
+{
+    char *devtype, * hostbus, *hostaddr, *p;
+
+    /*
+     * General format:
+     * <type>[:<type-specific options>]
+     */
+    p = s;
+    devtype = strsep(&p, ":");
+
+    if (strcmp(devtype, "hostdev")) {
+        fprintf(stderr, "Unknown device type: %s\n", devtype);
+        return -1;
+    }
+    
+    hostbus = strsep(&p, ".");
+
+    hostaddr = p;
+
+    if (!hostbus) {
+        fprintf(stderr, "Device type %s requires hostaddr\n",
+                devtype);
+        return -1;
+    }
+
+    if (!hostaddr) {
+        fprintf(stderr, "Device type %s requires hostaddr\n",
+                devtype);
+        return -1;
+    }
+
+    /* Make sure they look right */
+    for (p=hostbus; *p; p++) {
+        if (!CTYPE(isdigit,*p)) {
+            fprintf(stderr, "Bad hostbus: %s\n", hostbus);
+            return -1;
+        }
+    }
+    
+    for (p=hostaddr; *p; p++) {
+        if (!CTYPE(isdigit,*p)) {
+            fprintf(stderr, "Bad hostaddr: %s\n", hostaddr);
+            return -1;
+        }
+    }
+
+    dev->type = LIBXL_DEVICE_USB_TYPE_HOSTDEV;
+
+    dev->u.hostdev.hostbus  = atoi(hostbus);
+    dev->u.hostdev.hostaddr = atoi(hostaddr);
+
+    return 0;
+}
+
+static int usb_attach(uint32_t domid, char * device)
+{
+    libxl_device_usb usbdev;
+    int rc;
+
+    libxl_device_usb_init(&usbdev);
+
+    if (parse_usb_specifier(&usbdev, device)<0) {
+        rc = ERROR_FAIL;
+        goto out;
+    }
+
+    rc = libxl_device_usb_add(ctx, domid, &usbdev, NULL);
+    if (rc<0)
+        fprintf(stderr, "libxl_device_usb_add failed.\n");
+
+    libxl_device_usb_dispose(&usbdev);
+
+out:
+    return rc;
+}
+
+int main_usb_attach(int argc, char **argv)
+{
+    uint32_t domid = INVALID_DOMID;
+    int opt = 0, rc;
+    char *device = NULL;
+
+    SWITCH_FOREACH_OPT(opt, "", NULL, "usb-attach", 2) {
+        /* No options */
+    }
+
+    domid = find_domain(argv[optind]);
+    device = argv[optind + 1];
+
+    if (domid == INVALID_DOMID) {
+        fprintf(stderr, "Must specify domid\n\n");
+        help("usb-attach");
+        return 2;
+    }
+
+    rc = usb_attach(domid, device);
+    if (rc<0)
+        return 1;
+    else
+        return 0;
+}
+
+static int usb_detach(uint32_t domid, libxl_device_usb_type type,
+                      char * device)
+{
+    libxl_device_usb usbdev;
+    int rc;
+
+    libxl_device_usb_init(&usbdev);
+
+    if (parse_usb_specifier(&usbdev, device)<0) {
+        rc = ERROR_FAIL;
+        goto out;
+    }
+
+    rc = libxl_device_usb_remove(ctx, domid, &usbdev, NULL);
+    if (rc<0)
+        fprintf(stderr, "libxl_device_usb_remove failed.\n");
+
+    libxl_device_usb_dispose(&usbdev);
+
+out:
+    return rc;
+}
+
+int main_usb_detach(int argc, char **argv)
+{
+    uint32_t domid = INVALID_DOMID;
+    int opt = 0, rc;
+    char *device = NULL;
+    int type = 0;
+
+    SWITCH_FOREACH_OPT(opt, "", NULL, "usb-detach", 2) {
+        /* No options */
+    }
+
+    domid = find_domain(argv[optind]);
+    device = argv[optind + 1];
+
+    if (domid == INVALID_DOMID) {
+        fprintf(stderr, "Must specify domid\n\n");
+        help("usb-detach");
+        return 2;
+    }
+
+    rc = usb_detach(domid, type, device);
+    if (rc < 0)
+        return 1;
+    else
+        return 0;
+}
+
+static void usb_list(uint32_t domid)
+{
+    libxl_device_usb *dev;
+    int num, i;
+
+    dev = libxl_device_usb_list(ctx, domid, &num);
+    if (dev == NULL)
+        return;
+    printf("protocol  backend  type     device\n");
+    for (i = 0; i < num; i++) {
+        printf("%8s  ", (dev[i].protocol==LIBXL_USB_PROTOCOL_PV)?"pv":"dm");
+        printf("%7d  ", dev[i].backend_domid);
+        printf("%7s  ", (dev[i].type==LIBXL_DEVICE_USB_TYPE_HOSTDEV)?"hostdev":"unknown");
+        if (dev[i].type == LIBXL_DEVICE_USB_TYPE_HOSTDEV)
+            printf("%03d.%03d",
+                   dev[i].u.hostdev.hostbus,
+                   dev[i].u.hostdev.hostaddr);
+        printf("\n");
+    }
+    free(dev);
+}
+
+
+int main_usb_list(int argc, char **argv)
+{
+    uint32_t domid = INVALID_DOMID;
+    int opt;
+
+    SWITCH_FOREACH_OPT(opt, "", NULL, "usb-list", 1) {
+        /* No options */
+    }
+
+    domid = find_domain(argv[optind]);
+
+    if (domid == INVALID_DOMID) {
+        fprintf(stderr, "Must specify domid\n\n");
+        help("usb-list");
+        return 2;
+    }
+
+    usb_list(domid);
+    return 0;
+}
+
+
+
 int main_console(int argc, char **argv)
 {
     uint32_t domid;

@@ -1162,6 +1162,36 @@ List virtual network interfaces for a domain.
 
 =back
 
+=head2 USB DEVICES
+
+=over 4
+
+=item B<usb-attach> I<domain-id> I<hostdev:hostbus.hostaddr>
+
+Passes through the host USB device specified by I<hostbus.hostaddr>.  At
+the moment this will only work for HVM domains via qemu.
+
+The best way to find out the information for the device is typically using
+lsusb.
+
+This command is only available for domains using qemu-xen, not
+qemu-traditional.
+
+=item B<usb-detach> I<domain-id> I<hostdev:hosbus.hostaddr>
+
+Remove the host USB device from I<domain-id> which is specified
+by <hostbus.hostaddr>.  This command only works for devices added
+with usb-add; not for those specified in the config file.
+
+This command is only available for domains using qemu-xen, not
+qemu-traditional.
+
+=item B<usb-list> I<domain-id>
+
+Show host USB devices assigned to the guest.
+
+=back
+
 =head2 VTPM DEVICES
 
 =over 4
