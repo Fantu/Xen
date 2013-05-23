@@ -35,6 +35,9 @@ int main_info(int argc, char **argv);
 int main_sharing(int argc, char **argv);
 int main_cd_eject(int argc, char **argv);
 int main_cd_insert(int argc, char **argv);
+int main_usb_attach(int argc, char **argv);
+int main_usb_detach(int argc, char **argv);
+int main_usb_list(int argc, char **argv);
 int main_console(int argc, char **argv);
 int main_vncviewer(int argc, char **argv);
 int main_pcilist(int argc, char **argv);
@@ -164,6 +167,24 @@ extern void printf_info_sexp(int domid, libxl_domain_config *d_config);
 
 #define XL_GLOBAL_CONFIG XEN_CONFIG_DIR "/xl.conf"
 #define XL_LOCK_FILE XEN_LOCK_DIR "/xl"
+
+/*
+ * int CTYPE(ISFOO, char c);
+ * int CTYPE(toupper, char c);
+ * int CTYPE(tolower, char c);
+ *
+ * This is necessary because passing a simple char to a ctype.h
+ * is forbidden.  ctype.h macros take ints derived from _unsigned_ chars.
+ *
+ * If you have a char which might be EOF then you should already have
+ * it in an int representing an unsigned char, and you can use the
+ * <ctype.h> macros directly.  This generally happens only with values
+ * from fgetc et al.
+ *
+ * For any value known to be a character (eg, anything that came from
+ * a char[]), use CTYPE.
+ */
+#define CTYPE(isfoo,c) (isfoo((unsigned char)(c)))
 
 #endif /* XL_H */
 
