@@ -435,6 +435,28 @@ libxl_device_vtpm = Struct("device_vtpm", [
     ("uuid",             libxl_uuid),
 ])
 
+libxl_device_usb_protocol = Enumeration("usb_protocol", [
+    (0, "AUTO"),
+    (1, "PV"),
+    (2, "DEVICEMODEL"),
+    ])
+
+libxl_device_usb_type = Enumeration("device_usb_type", [
+    (1, "HOSTDEV"),
+    ])
+
+libxl_device_usb = Struct("device_usb", [
+        ("protocol", libxl_device_usb_protocol,
+         {'init_val': 'LIBXL_USB_PROTOCOL_AUTO'}),
+        ("backend_domid", libxl_domid,
+         {'init_val': 'LIBXL_DEVICE_USB_BACKEND_DEFAULT'}),
+        ("u", KeyedUnion(None, libxl_device_usb_type, "type",
+                         [("hostdev", Struct(None, [
+                                ("hostbus",   integer),
+                                ("hostaddr",  integer) ]))
+                          ]))
+    ])
+
 libxl_domain_config = Struct("domain_config", [
     ("c_info", libxl_domain_create_info),
     ("b_info", libxl_domain_build_info),

@@ -288,6 +288,7 @@ if __name__ == '__main__':
         "domain_config",
         "vcpuinfo",
         "event",
+        "device_usb"
         ]
 
     for t in blacklist:

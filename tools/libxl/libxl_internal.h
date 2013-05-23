@@ -1419,6 +1419,24 @@ _hidden int libxl__qmp_set_global_dirty_log(libxl__gc *gc, int domid, bool enabl
 _hidden int libxl__qmp_insert_cdrom(libxl__gc *gc, int domid, const libxl_device_disk *disk);
 /* Add a virtual CPU */
 _hidden int libxl__qmp_cpu_add(libxl__gc *gc, int domid, int index);
+/* Same as normal, but "translated" */
+typedef struct libxl__device_usb {
+    libxl_usb_protocol protocol;
+    libxl_domid target_domid;
+    libxl_domid backend_domid;
+    libxl_domid dm_domid;
+    libxl_device_usb_type type;
+    union {
+        struct {
+            int hostbus;
+            int hostaddr;
+        } hostdev;
+    } u;
+} libxl__device_usb;
+_hidden int libxl__qmp_usb_add(libxl__gc *gc, int domid,
+                               libxl__device_usb *dev);
+_hidden int libxl__qmp_usb_remove(libxl__gc *gc, int domid,
+                                  libxl__device_usb *dev);
 /* close and free the QMP handler */
 _hidden void libxl__qmp_close(libxl__qmp_handler *qmp);
 /* remove the socket file, if the file has already been removed,

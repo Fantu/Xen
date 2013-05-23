@@ -42,6 +42,7 @@
 
 #define QMP_RECEIVE_BUFFER_SIZE 4096
 #define PCI_PT_QDEV_ID "pci-pt-%02x_%02x.%01x"
+#define HOST_USB_QDEV_ID "usb-hostdev-%04x.%04x"
 
 typedef int (*qmp_callback_t)(libxl__qmp_handler *qmp,
                               const libxl__json_object *tree,
@@ -949,6 +950,70 @@ int libxl__qmp_cpu_add(libxl__gc *gc, int domid, int idx)
 
     return qmp_run_command(gc, domid, "cpu-add", args, NULL, NULL);
 }
+
+static int libxl__qmp_usb_hostdev_add(libxl__gc *gc, int domid,
+                                      libxl__device_usb *dev)
+{
+    libxl__json_object *args = NULL;
+    char *id;
+
+    id = GCSPRINTF(HOST_USB_QDEV_ID,
+                   (uint16_t)dev->u.hostdev.hostbus,
+                   (uint16_t)dev->u.hostdev.hostaddr);
+
+    qmp_parameters_add_string(gc, &args, "driver", "usb-host");
+    QMP_PARAMETERS_SPRINTF(&args, "hostbus", "0x%x", dev->u.hostdev.hostbus);
+    QMP_PARAMETERS_SPRINTF(&args, "hostaddr", "0x%x", dev->u.hostdev.hostaddr);
+
+    qmp_parameters_add_string(gc, &args, "id", id);
+
+    return qmp_run_command(gc, domid, "device_add", args, NULL, NULL);
+}
+
+int libxl__qmp_usb_add(libxl__gc *gc, int domid, libxl__device_usb *usbdev)
+{
+    int rc;
+    switch (usbdev->type) {
+    case LIBXL_DEVICE_USB_TYPE_HOSTDEV:
+        rc = libxl__qmp_usb_hostdev_add(gc, domid, usbdev);
+        break;
+    default:
+        return ERROR_INVAL;
+    }
+    return rc;
+}
+
+
+static int libxl__qmp_usb_hostdev_remove(libxl__gc *gc, int domid,
+                                         libxl__device_usb *dev)
+{
+    libxl__json_object *args = NULL;
+    char *id;
+
+    id = GCSPRINTF(HOST_USB_QDEV_ID,
+                   (uint16_t)dev->u.hostdev.hostbus,
+                   (uint16_t)dev->u.hostdev.hostaddr);
+
+    qmp_parameters_add_string(gc, &args, "id", id);
+
+    return qmp_run_command(gc, domid, "device_del", args, NULL, NULL);
+}
+
+int libxl__qmp_usb_remove(libxl__gc *gc, int domid,
+                          libxl__device_usb *usbdev)
+{
+    int rc;
+    switch (usbdev->type) {
+    case LIBXL_DEVICE_USB_TYPE_HOSTDEV:
+        rc = libxl__qmp_usb_hostdev_remove(gc, domid, usbdev);
+        break;
+    default:
+        return ERROR_INVAL;
+    }
+    return rc;
+}
+
+
 
 int libxl__qmp_initializations(libxl__gc *gc, uint32_t domid,
                                const libxl_domain_config *guest_config)

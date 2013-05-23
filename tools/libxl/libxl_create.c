@@ -448,7 +448,7 @@ int libxl__domain_make(libxl__gc *gc, libxl_domain_create_info *info,
     libxl_ctx *ctx = libxl__gc_owner(gc);
     int flags, ret, rc, nb_vm;
     char *uuid_string;
-    char *dom_path, *vm_path, *libxl_path;
+    char *dom_path, *vm_path, *libxl_path, *libxl_usb_path;
     struct xs_permissions roperm[2];
     struct xs_permissions rwperm[1];
     struct xs_permissions noperm[1];
@@ -509,6 +509,8 @@ int libxl__domain_make(libxl__gc *gc, libxl_domain_create_info *info,
         goto out;
     }
 
+    libxl_usb_path = GCSPRINTF("%s/usb", libxl_path);
+
     noperm[0].id = 0;
     noperm[0].perms = XS_PERM_NONE;
 
@@ -531,6 +533,15 @@ retry_transaction:
 
     xs_rm(ctx->xsh, t, libxl_path);
     libxl__xs_mkdir(gc, t, libxl_path, noperm, ARRAY_SIZE(noperm));
+
+    /* Helpfully, libxl__xs_rm_checked() returns 0 on success... */
+    rc = libxl__xs_rm_checked(gc, t, libxl_usb_path);
+    if (rc) goto out;
+    /* ...but libxl__xs_mkdir() returns 1 on success, 0 on failure. */
+    if (!libxl__xs_mkdir(gc, t, libxl_usb_path, noperm, ARRAY_SIZE(noperm))) {
+        rc = ERROR_FAIL;
+        goto out;
+    }
 
     xs_write(ctx->xsh, t, libxl__sprintf(gc, "%s/vm", dom_path), vm_path, strlen(vm_path));
     rc = libxl__domain_rename(gc, *domid, 0, info->name, t);
