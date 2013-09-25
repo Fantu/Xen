@@ -1538,6 +1538,8 @@ skip_vfb:
         xlu_cfg_replace_string (config, "serial", &b_info->u.hvm.serial, 0);
         xlu_cfg_replace_string (config, "boot", &b_info->u.hvm.boot, 0);
         xlu_cfg_get_defbool(config, "usb", &b_info->u.hvm.usb, 0);
+        if (!xlu_cfg_get_long (config, "usbversion", &l, 0))
+            b_info->u.hvm.usbversion = l;
         switch (xlu_cfg_get_list_as_string_list(config, "usbdevice",
                                                 &b_info->u.hvm.usbdevice_list,
                                                 1))
@@ -1554,6 +1556,13 @@ skip_vfb:
             /* FALLTHRU */
         default:
             fprintf(stderr,"xl: Unable to parse usbdevice.\n");
+            exit(-ERROR_FAIL);
+        }
+        if (b_info->u.hvm.usbversion && 
+            (b_info->u.hvm.usb || b_info->u.hvm.usbdevice_list
+            || b_info->u.hvm.usbdevice) ){
+            fprintf(stderr,"xl: usbversion cannot be enabled with usb or"
+            "usbdevice parameters.\n");
             exit(-ERROR_FAIL);
         }
         xlu_cfg_replace_string (config, "soundhw", &b_info->u.hvm.soundhw, 0);

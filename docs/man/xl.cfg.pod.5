@@ -1176,6 +1176,13 @@ device.
 
 Enables or disables an emulated USB bus in the guest.
 
+=item B<usbversion=NUMBER>
+ 
+Specifies the type of an emulated USB bus in the guest. 1 for usb1,
+2 for usb2 and 3 for usb3, it is available only with upstream qemu.
+The old usb and usbdevice parameters cannot be used with this.
+Default is 0 (no usb controller defined).
+
 =item B<usbdevice=[ "DEVICE", "DEVICE", ...]>
 
 Adds B<DEVICE>s to the emulated USB bus. The USB bus must also be
