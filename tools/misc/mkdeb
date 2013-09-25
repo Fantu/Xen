@@ -33,7 +33,7 @@ fi
 # Fill in the debian boilerplate
 mkdir -p deb/DEBIAN
 cat >deb/DEBIAN/control <<EOF
-Package: xen-upstream-$version
+Package: xen-upstream
 Source: xen-upstream
 Version: $version
 Architecture: $arch
@@ -41,15 +41,41 @@ Maintainer: Unmaintained snapshot
 Section: admin
 Priority: optional
 Installed-Size: $(du -ks deb | cut -f1)
-Description: Xen hypervisor and tools, version $version
- This package contains the Xen hypervisor and associated tools, built
- from a source tree.  It is not a fully packaged and supported Xen, just
- the output of a xen "make dist" wrapped in a .deb to make it easy to
- uninstall.
+Description: Xen upstream testing build snapshot
+ Warning: This is a custom testing build of Xen; it is not an
+ officially supported Debian package. Please not distribute.
+ It is just the output of a xen "make dist" wrapped in a .deb
+ to make it easy to update and uninstall.
+EOF
+cat >deb/DEBIAN/conffiles <<EOF
+/etc/xen/xl.conf
+/etc/default/xendomains
+/etc/default/xencommons
+EOF
+cat >deb/DEBIAN/postinst <<EOF
+#!/bin/bash
+set -e
+update-rc.d xencommons defaults >/dev/null
+update-rc.d xendomains defaults >/dev/null
+EOF
+cat >deb/DEBIAN/prerm <<EOF
+#!/bin/bash
+set -e
+invoke-rc.d xendomains stop || exit $?
+invoke-rc.d xencommons stop || exit $?
+EOF
+cat >deb/DEBIAN/postrm <<EOF
+#!/bin/bash
+set -e
+update-rc.d xendomains remove >/dev/null
+update-rc.d xencommons remove >/dev/null
 EOF
 
 # Package it up
 chown -R root:root deb
+chmod +x deb/DEBIAN/postinst
+chmod +x deb/DEBIAN/prerm
+chmod +x deb/DEBIAN/postrm
 dpkg --build deb xen-upstream-$version.deb
 
 # Tidy up after ourselves
