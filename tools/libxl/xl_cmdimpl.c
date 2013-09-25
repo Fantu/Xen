@@ -1532,6 +1532,8 @@ skip_vfb:
                             &b_info->u.hvm.spice.vdagent, 0);
         xlu_cfg_get_defbool(config, "spice_clipboard_sharing",
                             &b_info->u.hvm.spice.clipboard_sharing, 0);
+        if (!xlu_cfg_get_long (config, "spiceusbredirection", &l, 0))
+            b_info->u.hvm.spice.usbredirection = l;
         xlu_cfg_get_defbool(config, "nographic", &b_info->u.hvm.nographic, 0);
         xlu_cfg_get_defbool(config, "gfx_passthru", 
                             &b_info->u.hvm.gfx_passthru, 0);
@@ -1558,11 +1560,11 @@ skip_vfb:
             fprintf(stderr,"xl: Unable to parse usbdevice.\n");
             exit(-ERROR_FAIL);
         }
-        if (b_info->u.hvm.usbversion && 
+        if ((b_info->u.hvm.usbversion || b_info->u.hvm.spice.usbredirection) &&
             (b_info->u.hvm.usb || b_info->u.hvm.usbdevice_list
             || b_info->u.hvm.usbdevice) ){
-            fprintf(stderr,"xl: usbversion cannot be enabled with usb or"
-            "usbdevice parameters.\n");
+            fprintf(stderr,"xl: usbversion and/or usbredirection cannot be "
+            "enabled with usb and/or usbdevice parameters.\n");
             exit(-ERROR_FAIL);
         }
         xlu_cfg_replace_string (config, "soundhw", &b_info->u.hvm.soundhw, 0);
