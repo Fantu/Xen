@@ -200,6 +200,8 @@ subdir-all-qemu-xen-dir: qemu-xen-dir-find
 		--bindir=$(LIBEXEC) \
 		--datadir=$(SHAREDIR)/qemu-xen \
 		--disable-kvm \
+		--enable-spice \
+		--enable-usb-redir \
 		--disable-docs \
 		--python=$(PYTHON) \
 		$(IOEMU_CONFIGURE_CROSS); \
