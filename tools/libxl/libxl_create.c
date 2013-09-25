@@ -245,6 +245,9 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
             return ERROR_INVAL;
         }
 
+        if (!b_info->u.hvm.usbversion)
+            b_info->u.hvm.usbversion = 2;
+
         if (b_info->u.hvm.timer_mode == LIBXL_TIMER_MODE_DEFAULT)
             b_info->u.hvm.timer_mode =
                 LIBXL_TIMER_MODE_NO_DELAY_FOR_MISSED_TICKS;
