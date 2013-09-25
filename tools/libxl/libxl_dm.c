@@ -544,6 +544,20 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
                     "usbversion parameter is invalid must be between 1 and 3");
                 return NULL;
             }
+
+            if (b_info->u.hvm.spice.usbredirection >= 0 &&
+                b_info->u.hvm.spice.usbredirection < 5) {
+                for (i = 1; i <= b_info->u.hvm.spice.usbredirection; i++)
+                    flexarray_vappend(dm_args, "-chardev", libxl__sprintf(gc,
+                        "spicevmc,name=usbredir,id=usbrc%d", i), "-device",
+                        libxl__sprintf(gc, "usb-redir,chardev=usbrc%d,"
+                        "id=usbrc%d", i, i), NULL);
+            } else {
+                    LIBXL__LOG(CTX, LIBXL__LOG_ERROR,
+                        "usbredirection parameter must be between 1 and 4");
+                    return NULL;
+            }
+
             if (b_info->u.hvm.usbdevice) {
                 flexarray_vappend(dm_args,
                                   "-usbdevice", b_info->u.hvm.usbdevice, NULL);
