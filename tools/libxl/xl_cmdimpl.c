@@ -1491,6 +1491,9 @@ skip_vfb:
     }
 
 
+    xlu_cfg_replace_string (config, "machine",
+                            &b_info->qemu_machine, 0);
+
     xlu_cfg_replace_string (config, "device_model_override",
                             &b_info->device_model, 0);
     if (!xlu_cfg_get_string (config, "device_model_version", &buf, 0)) {
