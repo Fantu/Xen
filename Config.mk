@@ -84,7 +84,7 @@ EXTRA_LIB += $(EXTRA_PREFIX)/lib
 endif
 
 PYTHON      ?= python
-PYTHON_PREFIX_ARG ?= --prefix="$(PREFIX)"
+PYTHON_PREFIX_ARG ?=
 # The above requires that PREFIX contains *no spaces*. This variable is here
 # to permit the user to set PYTHON_PREFIX_ARG to '' to workaround this bug:
 #  https://bugs.launchpad.net/ubuntu/+bug/362570

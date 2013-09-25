@@ -201,6 +201,8 @@ subdir-all-qemu-xen-dir: qemu-xen-dir-find
 		--datadir=$(SHAREDIR)/qemu-xen \
 		--localstatedir=/var \
 		--disable-kvm \
+		--enable-spice \
+		--enable-usb-redir \
 		--disable-docs \
 		--disable-guest-agent \
 		--python=$(PYTHON) \
