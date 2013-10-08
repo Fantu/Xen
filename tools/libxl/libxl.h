@@ -369,17 +369,6 @@
  */
 #define LIBXL_HAVE_SPICE_VDAGENT 1
 
-/*
- * LIBXL_HAVE_SPICE_USBREDIRECTION
- *
- * If defined, then the libxl_spice_info structure will contain an integer type
- * field: usbredirection. This value defines if Spice usbredirection is enabled
- * and with how much channels.
- *
- * If this is not defined, the Spice usbredirection support is ignored.
- */
-#define LIBXL_HAVE_SPICE_USBREDIREDIRECTION 1
-
 /* Functions annotated with LIBXL_EXTERNAL_CALLERS_ONLY may not be
  * called from within libxl itself. Callers outside libxl, who
  * do not #include libxl_internal.h, are fine. */
