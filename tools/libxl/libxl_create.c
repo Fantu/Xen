@@ -229,6 +229,10 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
             case LIBXL_VGA_INTERFACE_TYPE_NONE:
                 b_info->video_memkb = 0;
                 break;
+            case LIBXL_VGA_INTERFACE_TYPE_QXL:
+                LOG(ERROR,"qemu upstream required for qxl vga");
+                return ERROR_INVAL;
+                break;
             case LIBXL_VGA_INTERFACE_TYPE_STD:
                 if (b_info->video_memkb == LIBXL_MEMKB_DEFAULT)
                     b_info->video_memkb = 8 * 1024;
@@ -251,6 +255,15 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
             switch (b_info->u.hvm.vga.kind) {
             case LIBXL_VGA_INTERFACE_TYPE_NONE:
                 b_info->video_memkb = 0;
+                break;
+            case LIBXL_VGA_INTERFACE_TYPE_QXL:
+                if (b_info->video_memkb == LIBXL_MEMKB_DEFAULT) {
+                    b_info->video_memkb = (128 * 1024);
+                } else if (b_info->video_memkb < (128 * 1024)) {
+                    LOG(ERROR,
+                        "128 Mib videoram is the minimum for qxl default");
+                    return ERROR_INVAL;
+                }
                 break;
             case LIBXL_VGA_INTERFACE_TYPE_STD:
                 if (b_info->video_memkb == LIBXL_MEMKB_DEFAULT)
