@@ -225,11 +225,11 @@ QEMU_REMOTE ?= git://xenbits.xen.org/qemu-xen-unstable.git
 endif
 
 ifeq ($(GIT_HTTP),y)
-OVMF_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/ovmf.git
+OVMF_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/people/liuw/ovmf.git
 QEMU_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/qemu-upstream-unstable.git
 SEABIOS_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/seabios.git
 else
-OVMF_UPSTREAM_URL ?= git://xenbits.xen.org/ovmf.git
+OVMF_UPSTREAM_URL ?= git://xenbits.xen.org/people/liuw/ovmf.git
 QEMU_UPSTREAM_URL ?= git://xenbits.xen.org/qemu-upstream-unstable.git
 SEABIOS_UPSTREAM_URL ?= git://xenbits.xen.org/seabios.git
 endif
