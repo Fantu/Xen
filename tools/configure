@@ -1422,7 +1422,7 @@ Optional Features:
   --enable-xenapi         Enable Xen API Bindings (default is DISABLED)
   --disable-ocamltools    Disable Ocaml tools (default is ENABLED)
   --disable-xsmpolicy     Disable XSM policy compilation (default is ENABLED)
-  --enable-ovmf           Enable OVMF (default is DISABLED)
+  --disable-ovmf          Enable OVMF (default is ENABLED)
   --disable-rombios       Disable ROM BIOS (default is ENABLED)
   --disable-seabios       Disable SeaBIOS (default is ENABLED)
   --disable-debug         Disable debug build of tools (default is ENABLED)
@@ -3584,7 +3584,7 @@ elif test "x$enable_ovmf" = "xyes"; then :
 
 elif test -z $ax_cv_ovmf; then :
 
-    ax_cv_ovmf="n"
+    ax_cv_ovmf="y"
 
 fi
 ovmf=$ax_cv_ovmf
