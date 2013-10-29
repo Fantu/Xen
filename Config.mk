@@ -224,15 +224,15 @@ QEMU_REMOTE=git://xenbits.xen.org/qemu-xen-unstable.git
 endif
 
 ifeq ($(GIT_HTTP),y)
-OVMF_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/ovmf.git
+OVMF_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/people/liuw/ovmf.git
 QEMU_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/qemu-upstream-unstable.git
 SEABIOS_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/seabios.git
 else
-OVMF_UPSTREAM_URL ?= git://xenbits.xen.org/ovmf.git
+OVMF_UPSTREAM_URL ?= git://xenbits.xen.org/people/liuw/ovmf.git
 QEMU_UPSTREAM_URL ?= git://xenbits.xen.org/qemu-upstream-unstable.git
 SEABIOS_UPSTREAM_URL ?= git://xenbits.xen.org/seabios.git
 endif
-OVMF_UPSTREAM_REVISION ?= b0855f925c6e2e0b21fbb03fab4b5fb5b6876871
+OVMF_UPSTREAM_REVISION ?= a93b0e3f6895a074b99c8817181dfa6dbc7a4807
 QEMU_UPSTREAM_REVISION ?= 1c514a7734b7f98625a0d18d5e8ee7581f26e50c
 SEABIOS_UPSTREAM_TAG ?= rel-1.7.3.1
 # Fri Aug 2 14:12:09 2013 -0400
