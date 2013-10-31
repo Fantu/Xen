@@ -1,3 +1,6 @@
+XEN_ROOT = $(CURDIR)/../../..
+include $(XEN_ROOT)/tools/Rules.mk
+
 # OVMF building system is not ready yet to run in parallel.
 # Force it to be serial in order to exploit parallelism for neighbors.
 
@@ -9,8 +12,14 @@ all: ovmf.bin
 
 .PHONY: ovmf.bin
 ovmf.bin:
-	OvmfPkg/build.sh -a X64
-	cp Build/OvmfX64/DEBUG_GCC*/FV/OVMF.fd ovmf.bin
+	if [ "$(debug)" == y ]; then \
+		OvmfPkg/build.sh -a X64; \
+		cp Build/OvmfX64/DEBUG_GCC*/FV/OVMF.fd ovmf.bin; \
+	else \
+		OvmfPkg/build.sh -a X64 -b RELEASE; \
+		cp Build/OvmfX64/RELEASE_GCC*/FV/OVMF.fd ovmf.bin; \
+	fi
+
 
 .PHONY: clean
 clean:
