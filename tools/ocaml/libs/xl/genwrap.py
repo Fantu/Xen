@@ -498,6 +498,7 @@ if __name__ == '__main__':
     blacklist = [
         "cpupoolinfo",
         "vcpuinfo",
+        "device_usb"
         ]
 
     for t in blacklist:

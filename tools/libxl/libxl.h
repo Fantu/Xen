@@ -82,6 +82,12 @@
 #define LIBXL_HAVE_DOMAIN_NODEAFFINITY 1
 
 /*
+ * LIBXL_HAVE_DEVICE_USB indicates the functions for doing hot-plug of
+ * USB devices.
+ */
+#define LIBXL_HAVE_DEVICE_USB 1
+
+/*
  * LIBXL_HAVE_BUILDINFO_HVM_VENDOR_DEVICE indicates that the
  * libxl_vendor_device field is present in the hvm sections of
  * libxl_domain_build_info. This field tells libxl which
@@ -857,6 +863,37 @@ int libxl_device_disk_getinfo(libxl_ctx *ctx, uint32_t domid,
 int libxl_cdrom_insert(libxl_ctx *ctx, uint32_t domid, libxl_device_disk *disk,
                        const libxl_asyncop_how *ao_how)
                        LIBXL_EXTERNAL_CALLERS_ONLY;
+
+/*
+ * USB
+ *
+ * For each device removed or added, one of these protocols is available:
+ * - PV (i.e., PVUSB)
+ * - DEVICEMODEL (i.e, qemu)
+ *
+ * PV is available for either PV or HVM domains.  DEVICEMODEL is only
+ * available for HVM domains.  The caller can additionally specify
+ * "AUTO", in which case the library will try to determine the best
+ * protocol automatically.
+ *
+ * At the moment, the only protocol implemented is DEVICEMODEL, and the only
+ * device type impelmented is HOSTDEV.
+ *
+ * This uses the qmp functionality, and is thus only available for
+ * qemu-xen, not qemu-traditional.
+ */
+#define LIBXL_DEVICE_USB_BACKEND_DEFAULT (-1)
+int libxl_device_usb_add(libxl_ctx *ctx, uint32_t domid,
+                         libxl_device_usb *dev,
+                         const libxl_asyncop_how *ao_how)
+                         LIBXL_EXTERNAL_CALLERS_ONLY;
+int libxl_device_usb_remove(libxl_ctx *ctx, uint32_t domid,
+                            libxl_device_usb *dev,
+                            const libxl_asyncop_how *ao_how)
+                            LIBXL_EXTERNAL_CALLERS_ONLY;
+libxl_device_usb *libxl_device_usb_list(libxl_ctx *ctx, uint32_t domid,
+                                        int *num)
+                          LIBXL_EXTERNAL_CALLERS_ONLY;
 
 /* Network Interfaces */
 int libxl_device_nic_add(libxl_ctx *ctx, uint32_t domid, libxl_device_nic *nic,
