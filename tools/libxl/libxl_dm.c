@@ -204,7 +204,8 @@ static char ** libxl__build_device_model_args_old(libxl__gc *gc,
             flexarray_append(dm_args, "-nographic");
         }
 
-        if (b_info->video_memkb) {
+        if (b_info->video_memkb
+            && b_info->u.hvm.vga.kind != LIBXL_VGA_INTERFACE_TYPE_NONE) {
             flexarray_vappend(dm_args, "-videoram",
                     libxl__sprintf(gc, "%d",
                                    libxl__sizekb_to_mb(b_info->video_memkb)),
@@ -216,6 +217,9 @@ static char ** libxl__build_device_model_args_old(libxl__gc *gc,
             flexarray_append(dm_args, "-std-vga");
             break;
         case LIBXL_VGA_INTERFACE_TYPE_CIRRUS:
+            break;
+        case LIBXL_VGA_INTERFACE_TYPE_NONE:
+            flexarray_append_pair(dm_args, "-vga", "none");
             break;
         }
 
@@ -514,6 +518,8 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
             flexarray_append_pair(dm_args, "-global",
                 GCSPRINTF("vga.vram_size_mb=%d",
                 libxl__sizekb_to_mb(b_info->video_memkb)));
+            break;
+        case LIBXL_VGA_INTERFACE_TYPE_NONE:
             break;
         }
 
