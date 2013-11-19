@@ -489,10 +489,6 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
             flexarray_vappend(dm_args, "-serial", b_info->u.hvm.serial, NULL);
         }
 
-        if (libxl_defbool_val(b_info->u.hvm.nographic) && (!sdl && !vnc)) {
-            flexarray_append(dm_args, "-nographic");
-        }
-
         if (libxl_defbool_val(b_info->u.hvm.spice.enable)) {
             const libxl_spice_info *spice = &b_info->u.hvm.spice;
             char *spiceoptions = dm_spice_options(gc, spice);
@@ -635,10 +631,6 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
         }
         if (libxl_defbool_val(b_info->u.hvm.gfx_passthru)) {
             flexarray_append(dm_args, "-gfx_passthru");
-        }
-    } else {
-        if (!sdl && !vnc) {
-            flexarray_append(dm_args, "-nographic");
         }
     }
 

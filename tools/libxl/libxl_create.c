@@ -220,6 +220,12 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
         if (b_info->shadow_memkb == LIBXL_MEMKB_DEFAULT)
             b_info->shadow_memkb = 0;
 
+        libxl_defbool_setdefault(&b_info->u.hvm.nographic, false);
+
+        if (libxl_defbool_val(b_info->u.hvm.nographic) &&
+            b_info->device_model_version == LIBXL_DEVICE_MODEL_VERSION_QEMU_XEN)
+            b_info->u.hvm.vga.kind = LIBXL_VGA_INTERFACE_TYPE_NONE;
+
         if (!b_info->u.hvm.vga.kind)
             b_info->u.hvm.vga.kind = LIBXL_VGA_INTERFACE_TYPE_CIRRUS;
 
@@ -329,8 +335,6 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
             libxl_defbool_setdefault(&b_info->u.hvm.spice.clipboard_sharing,
                                      false);
         }
-
-        libxl_defbool_setdefault(&b_info->u.hvm.nographic, false);
 
         libxl_defbool_setdefault(&b_info->u.hvm.gfx_passthru, false);
 
