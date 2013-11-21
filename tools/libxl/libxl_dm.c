@@ -396,6 +396,7 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
     const libxl_vnc_info *vnc = libxl__dm_vnc(guest_config);
     const libxl_sdl_info *sdl = dm_sdl(guest_config);
     const char *keymap = dm_keymap(guest_config);
+    const char *machine = b_info->qemu_machine;
     flexarray_t *dm_args;
     int i;
     uint64_t ram_size;
@@ -650,6 +651,29 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
     }
     for (i = 0; b_info->extra && b_info->extra[i] != NULL; i++)
         flexarray_append(dm_args, b_info->extra[i]);
+
+    if (b_info->type == LIBXL_DOMAIN_TYPE_HVM) {
+        if (libxl_defbool_val(b_info->u.hvm.xen_platform_pci)) {
+            if (b_info->qemu_machine) {
+                /* Check the qemu machine asked for, it can be "xenfv" which
+                 * will add xen-platform, or it can be "pc" or "pc-*" which
+                 * in this case will need to add the device here. Anything
+                 * else is eithier a mistack or a machine not supported by
+                 * xen. */
+                if (!strncmp("pc", b_info->qemu_machine, 2)) {
+                    flexarray_vappend(dm_args, "-device", "xen-platform");
+                }
+            }
+        } else {
+            /* Switching here to the machine "pc" which does not add
+             * the xen-platform device instead of the default "xenfv" machine.
+             */
+            if (!b_info->qemu_machine) {
+                machine = "pc";
+            }
+        }
+    }
+
     flexarray_append(dm_args, "-machine");
     switch (b_info->type) {
     case LIBXL_DOMAIN_TYPE_PV:
@@ -658,8 +682,12 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
             flexarray_append(dm_args, b_info->extra_pv[i]);
         break;
     case LIBXL_DOMAIN_TYPE_HVM:
-        if (b_info->qemu_machine)
-            flexarray_append(dm_args, GCSPRINTF("%s,accel=xen", b_info->qemu_machine));
+        LOG(DEBUG, "my machines %s, %s\n",
+            machine,
+            b_info->qemu_machine);
+        // this all -machine pc will work only on qemu >= 1.6
+        if (machine)
+            flexarray_append(dm_args, GCSPRINTF("%s,accel=xen", machine));
         else
             flexarray_append(dm_args, "xenfv");
         for (i = 0; b_info->extra_hvm && b_info->extra_hvm[i] != NULL; i++)
