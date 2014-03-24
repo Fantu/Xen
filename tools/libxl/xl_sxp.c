@@ -127,14 +127,14 @@ void printf_info_sexp(int domid, libxl_domain_config *d_config)
         printf("\t\t\t(nographic %s)\n",
                libxl_defbool_to_string(b_info->u.hvm.nographic));
         printf("\t\t\t(spice %s)\n",
-               libxl_defbool_to_string(b_info->u.hvm.spice.enable));
-        printf("\t\t\t(spiceport %d)\n", b_info->u.hvm.spice.port);
-        printf("\t\t\t(spicetls_port %d)\n", b_info->u.hvm.spice.tls_port);
-        printf("\t\t\t(spicehost %s)\n", b_info->u.hvm.spice.host);
+               libxl_defbool_to_string(b_info->spice.enable));
+        printf("\t\t\t(spiceport %d)\n", b_info->spice.port);
+        printf("\t\t\t(spicetls_port %d)\n", b_info->spice.tls_port);
+        printf("\t\t\t(spicehost %s)\n", b_info->spice.host);
         printf("\t\t\t(spicedisable_ticketing %s)\n",
-               libxl_defbool_to_string(b_info->u.hvm.spice.disable_ticketing));
+               libxl_defbool_to_string(b_info->spice.disable_ticketing));
         printf("\t\t\t(spiceagent_mouse %s)\n",
-               libxl_defbool_to_string(b_info->u.hvm.spice.agent_mouse));
+               libxl_defbool_to_string(b_info->spice.agent_mouse));
 
         printf("\t\t\t(device_model %s)\n", b_info->device_model ? : "default");
         printf("\t\t\t(gfx_passthru %s)\n",
