@@ -1175,71 +1175,6 @@ it.
 
 =back
 
-=head3 Spice Graphics Support
-
-The following options control the features of SPICE.
-
-=over 4
-
-=item B<spice=BOOLEAN>
-
-Allow access to the display via the SPICE protocol.  This enables the
-other SPICE-related settings.
-
-=item B<spicehost="ADDRESS">
-
-Specify the interface address to listen on if given, otherwise any
-interface.
-
-=item B<spiceport=NUMBER>
-
-Specify the port to listen on by the SPICE server if the SPICE is
-enabled.
-
-=item B<spicetls_port=NUMBER>
-
-Specify the secure port to listen on by the SPICE server if the SPICE
-is enabled. At least one of the spiceport or spicetls_port must be
-given if SPICE is enabled.  NB. the options depending on spicetls_port
-have not been supported.
-
-=item B<spicedisable_ticketing=BOOLEAN>
-
-Enable client connection without password. When disabled, spicepasswd
-must be set. The default is false (0).
-
-=item B<spicepasswd="PASSWORD">
-
-Specify the ticket password which is used by a client for connection.
-
-=item B<spiceagent_mouse=BOOLEAN>
-
-Whether SPICE agent is used for client mouse mode. The default is true (1)
-(turn on)
-
-=item B<spicevdagent=BOOLEAN>
-
-Enables spice vdagent. The Spice vdagent is an optional component for
-enhancing user experience and performing guest-oriented management
-tasks. Its features includes: client mouse mode (no need to grab mouse
-by client, no mouse lag), automatic adjustment of screen resolution,
-copy and paste (text and image) between client and domU. It also
-requires vdagent service installed on domU o.s. to work. The default is 0.
-
-=item B<spice_clipboard_sharing=BOOLEAN>
-
-Enables Spice clipboard sharing (copy/paste). It requires spicevdagent
-enabled. The default is false (0).
-
-=item B<spiceusbredirection=NUMBER>
-
-Enables spice usbredirection. Creates NUMBER usbredirection channels
-for redirection of up to 4 usb devices from spice client to domU's qemu.
-It requires an usb controller and if not defined it will automatically adds
-an usb2 controller. The default is disabled (0).
-
-=back
-
 =head3 Miscellaneous Emulated Hardware
 
 =over 4
@@ -1385,6 +1320,74 @@ option to the device-model.
 Pass additional arbitrary options on the device-model command line for
 an HVM device model only. Each element in the list is passed as an
 option to the device-model.
+
+=back
+
+=head2 Spice Graphics Support
+
+The following options control the features of SPICE.
+
+=over 4
+
+=item B<spice=BOOLEAN>
+
+Allow access to the display via the SPICE protocol.  This enables the
+other SPICE-related settings.
+
+=item B<spicehost="ADDRESS">
+
+Specify the interface address to listen on if given, otherwise any
+interface.
+
+=item B<spiceport=NUMBER>
+
+Specify the port to listen on by the SPICE server if the SPICE is
+enabled.
+
+=item B<spicetls_port=NUMBER>
+
+Specify the secure port to listen on by the SPICE server if the SPICE
+is enabled. At least one of the spiceport or spicetls_port must be
+given if SPICE is enabled.  NB. the options depending on spicetls_port
+have not been supported.
+
+=item B<spicedisable_ticketing=BOOLEAN>
+
+Enable client connection without password. When disabled, spicepasswd
+must be set. The default is false (0).
+
+=item B<spicepasswd="PASSWORD">
+
+Specify the ticket password which is used by a client for connection.
+
+=item B<spiceagent_mouse=BOOLEAN>
+
+Whether SPICE agent is used for client mouse mode. The default is true (1)
+(turn on)
+
+=item B<spicevdagent=BOOLEAN>
+
+Enables spice vdagent. The Spice vdagent is an optional component for
+enhancing user experience and performing guest-oriented management
+tasks. Its features includes: client mouse mode (no need to grab mouse
+by client, no mouse lag), automatic adjustment of screen resolution,
+copy and paste (text and image) between client and domU. It also
+requires vdagent service installed on domU o.s. to work. The default is 0.
+This feature is actually supported only by hvm domUs.
+
+=item B<spice_clipboard_sharing=BOOLEAN>
+
+Enables Spice clipboard sharing (copy/paste). It requires spicevdagent
+enabled. The default is false (0).
+This feature is actually supported only by hvm domUs.
+
+=item B<spiceusbredirection=NUMBER>
+
+Enables spice usbredirection. Creates NUMBER usbredirection channels
+for redirection of up to 4 usb devices from spice client to domU's qemu.
+It requires an usb controller and if not defined it will automatically adds
+an usb2 controller. The default is disabled (0).
+This feature is actually supported only by hvm domUs.
 
 =back
 

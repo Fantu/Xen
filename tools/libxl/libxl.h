@@ -337,6 +337,19 @@
 #define LIBXL_HAVE_BUILDINFO_USBVERSION 1
 
 /*
+ * LIBXL_HAVE_BUILDINFO_SPICE
+ *
+ * If this is defined, then the libxl_domain_build_info structure will
+ * contain spice, a libxl_spice_info struct instead of older hvm.spice one
+ * which is now deprecated.
+ *
+ * If it is set, callers may use spice to specify the spice values.
+ *
+ * If this is not defined, the spice struct does not exist.
+ */
+#define LIBXL_HAVE_BUILDINFO_SPICE 1
+
+/*
  * LIBXL_HAVE_DEVICE_BACKEND_DOMNAME
  *
  * If this is defined, libxl_device_* structures containing a backend_domid
