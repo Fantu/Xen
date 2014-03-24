@@ -215,6 +215,14 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
     if (!b_info->event_channels)
         b_info->event_channels = 1023;
 
+    libxl_defbool_setdefault(&b_info->spice.enable, false);
+    if (libxl_defbool_val(b_info->spice.enable)) {
+        libxl_defbool_setdefault(&b_info->spice.disable_ticketing, false);
+        libxl_defbool_setdefault(&b_info->spice.agent_mouse, true);
+        libxl_defbool_setdefault(&b_info->spice.vdagent, false);
+        libxl_defbool_setdefault(&b_info->spice.clipboard_sharing, false);
+    }
+
     switch (b_info->type) {
     case LIBXL_DOMAIN_TYPE_HVM:
         if (b_info->shadow_memkb == LIBXL_MEMKB_DEFAULT)
@@ -306,10 +314,10 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
         libxl_defbool_setdefault(&b_info->u.hvm.xen_platform_pci,   true);
 
         if (!b_info->u.hvm.usbversion &&
-            (b_info->u.hvm.spice.usbredirection > 0) )
+            (b_info->spice.usbredirection > 0) )
             b_info->u.hvm.usbversion = 2;
 
-        if ((b_info->u.hvm.usbversion || b_info->u.hvm.spice.usbredirection) &&
+        if ((b_info->u.hvm.usbversion || b_info->spice.usbredirection) &&
             ( libxl_defbool_val(b_info->u.hvm.usb)
             || b_info->u.hvm.usbdevice_list
             || b_info->u.hvm.usbdevice) ){
@@ -335,16 +343,6 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
         libxl_defbool_setdefault(&b_info->u.hvm.sdl.enable, false);
         if (libxl_defbool_val(b_info->u.hvm.sdl.enable)) {
             libxl_defbool_setdefault(&b_info->u.hvm.sdl.opengl, false);
-        }
-
-        libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
-        if (libxl_defbool_val(b_info->u.hvm.spice.enable)) {
-            libxl_defbool_setdefault(&b_info->u.hvm.spice.disable_ticketing,
-                                     false);
-            libxl_defbool_setdefault(&b_info->u.hvm.spice.agent_mouse, true);
-            libxl_defbool_setdefault(&b_info->u.hvm.spice.vdagent, false);
-            libxl_defbool_setdefault(&b_info->u.hvm.spice.clipboard_sharing,
-                                     false);
         }
 
         libxl_defbool_setdefault(&b_info->u.hvm.nographic, false);

@@ -478,6 +478,21 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
         flexarray_vappend(dm_args, "-k", keymap, NULL);
     }
 
+    if (libxl_defbool_val(b_info->spice.enable)) {
+        const libxl_spice_info *spice = &b_info->spice;
+        char *spiceoptions = dm_spice_options(gc, spice);
+        if (!spiceoptions)
+            return NULL;
+
+        flexarray_append(dm_args, "-spice");
+        flexarray_append(dm_args, spiceoptions);
+        if (libxl_defbool_val(b_info->spice.vdagent)) {
+            flexarray_vappend(dm_args, "-device", "virtio-serial",
+                "-chardev", "spicevmc,id=vdagent,name=vdagent", "-device",
+                "virtserialport,chardev=vdagent,name=com.redhat.spice.0", NULL);
+        }
+    }
+
     if (b_info->type == LIBXL_DOMAIN_TYPE_HVM) {
         int ioemu_nics = 0;
 
@@ -487,22 +502,6 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
 
         if (libxl_defbool_val(b_info->u.hvm.nographic) && (!sdl && !vnc)) {
             flexarray_append(dm_args, "-nographic");
-        }
-
-        if (libxl_defbool_val(b_info->u.hvm.spice.enable)) {
-            const libxl_spice_info *spice = &b_info->u.hvm.spice;
-            char *spiceoptions = dm_spice_options(gc, spice);
-            if (!spiceoptions)
-                return NULL;
-
-            flexarray_append(dm_args, "-spice");
-            flexarray_append(dm_args, spiceoptions);
-            if (libxl_defbool_val(b_info->u.hvm.spice.vdagent)) {
-                flexarray_vappend(dm_args, "-device", "virtio-serial",
-                    "-chardev", "spicevmc,id=vdagent,name=vdagent", "-device",
-                    "virtserialport,chardev=vdagent,name=com.redhat.spice.0",
-                    NULL);
-            }
         }
 
         switch (b_info->u.hvm.vga.kind) {
@@ -639,7 +638,7 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
             flexarray_append(dm_args, "-gfx_passthru");
         }
     } else {
-        if (!sdl && !vnc) {
+        if (!sdl && !vnc && !libxl_defbool_val(b_info->spice.enable)) {
             flexarray_append(dm_args, "-nographic");
         }
     }
