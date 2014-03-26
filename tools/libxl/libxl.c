@@ -3439,6 +3439,18 @@ int libxl__device_vfb_add(libxl__gc *gc, uint32_t domid, libxl_device_vfb *vfb)
     if (vfb->sdl.display) {
         flexarray_append_pair(back, "display", vfb->sdl.display);
     }
+    flexarray_append_pair(back, "spice", libxl_defbool_val(
+                          b_info->u.hvm.spice.enable) ? "1" : "0");
+    flexarray_append_pair(back, "spicelisten", b_info->u.hvm.spice.host);
+    flexarray_append_pair(back, "spiceport",
+                          libxl__sprintf(gc, "%d", b_info->u.hvm.spice.port));
+    if (b_info->u.hvm.spice.tls_port) {
+        flexarray_append_pair(back, "spicetls_port", libxl__sprintf(gc, "%d",
+                              b_info->u.hvm.spice.tls_port));
+    }
+    flexarray_append_pair(back, "spicedisable_ticketing", libxl_defbool_val(
+                          b_info->u.hvm.spice.disable_ticketing) ? "1" : "0");
+    flexarray_append_pair(back, "spicepasswd", b_info->u.hvm.spice.passwd);
 
     flexarray_append_pair(front, "backend-id",
                           libxl__sprintf(gc, "%d", vfb->backend_domid));

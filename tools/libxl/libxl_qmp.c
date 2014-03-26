@@ -203,6 +203,44 @@ out:
     return rc;
 }
 
+static int qmp_register_spice_callback(libxl__qmp_handler *qmp,
+                                     const libxl__json_object *o,
+                                     void *unused)
+{
+    GC_INIT(qmp->ctx);
+    const libxl__json_object *obj;
+    const char *addr, *port;
+    int rc = -1;
+
+    if (!libxl__json_object_is_map(o)) {
+        goto out;
+    }
+
+    obj = libxl__json_map_get("enabled", o, JSON_BOOL);
+    if (!obj || !libxl__json_object_get_bool(obj)) {
+        rc = 0;
+        goto out;
+    }
+
+    obj = libxl__json_map_get("host", o, JSON_STRING);
+    addr = libxl__json_object_get_string(obj);
+    obj = libxl__json_map_get("port", o, JSON_INTEGER);
+    port = GCSPRINTF("%lld", libxl__json_object_get_integer(obj));
+
+    if (!addr || !port) {
+        LOG(ERROR, "Failed to retreive SPICE connect information.");
+        goto out;
+    }
+
+    rc = qmp_write_domain_console_item(gc, qmp->domid, "spice-listen", addr);
+    if (!rc)
+        rc = qmp_write_domain_console_item(gc, qmp->domid, "spice-port", port);
+
+out:
+    GC_FREE;
+    return rc;
+}
+
 static int qmp_capabilities_callback(libxl__qmp_handler *qmp,
                                      const libxl__json_object *o, void *unused)
 {
@@ -744,6 +782,13 @@ static int qmp_query_vnc(libxl__qmp_handler *qmp)
                                 NULL, qmp->timeout);
 }
 
+static int qmp_query_spice(libxl__qmp_handler *qmp)
+{
+    return qmp_synchronous_send(qmp, "query-spice", NULL,
+                                qmp_register_spice_callback,
+                                NULL, qmp->timeout);
+}
+
 static int pci_add_callback(libxl__qmp_handler *qmp,
                             const libxl__json_object *response, void *opaque)
 {
@@ -957,6 +1002,7 @@ int libxl__qmp_initializations(libxl__gc *gc, uint32_t domid,
     if (!ret) {
         ret = qmp_query_vnc(qmp);
     }
+    qmp_query_spice(qmp);
     libxl__qmp_close(qmp);
     return ret;
 }
