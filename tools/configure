@@ -667,6 +667,7 @@ INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
 SET_MAKE
+QEMUU_EXTRA_ARGS
 IASL
 BCC
 LD86
@@ -792,6 +793,7 @@ AS86
 LD86
 BCC
 IASL
+QEMUU_EXTRA_ARGS
 CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
@@ -1467,6 +1469,8 @@ Some influential environment variables:
   LD86        Path to ld86 tool
   BCC         Path to bcc tool
   IASL        Path to iasl tool
+  QEMUU_EXTRA_ARGS
+              List of upstream qemu additionals build paramters
   CPP         C preprocessor
   PKG_CONFIG  path to pkg-config utility
   PKG_CONFIG_PATH
@@ -3847,6 +3851,7 @@ do
 done
 CPPFLAGS="$PREPEND_CPPFLAGS $CPPFLAGS $APPEND_CPPFLAGS"
 LDFLAGS="$PREPEND_LDFLAGS $LDFLAGS $APPEND_LDFLAGS"
+
 
 
 

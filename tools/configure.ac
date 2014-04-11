@@ -141,6 +141,7 @@ AC_ARG_VAR([AS86], [Path to as86 tool])
 AC_ARG_VAR([LD86], [Path to ld86 tool])
 AC_ARG_VAR([BCC], [Path to bcc tool])
 AC_ARG_VAR([IASL], [Path to iasl tool])
+AC_ARG_VAR([QEMUU_EXTRA_ARGS], [List of upstream qemu additionals build paramters])
 
 # Checks for programs.
 AC_PROG_CC
