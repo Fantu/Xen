@@ -687,6 +687,7 @@ ovmf_path
 seabios_path
 qemu_xen
 qemu_traditional
+qemuu_extra_args
 blktap1
 debug
 seabios
@@ -763,6 +764,8 @@ enable_rombios
 enable_seabios
 enable_debug
 enable_blktap1
+enable_qemuu_spice
+enable_qemuu_usbredir
 enable_qemu_traditional
 with_system_qemu
 with_system_seabios
@@ -1423,6 +1426,8 @@ Optional Features:
   --disable-seabios       Disable SeaBIOS (default is ENABLED)
   --disable-debug         Disable debug build of tools (default is ENABLED)
   --enable-blktap1        Enable blktap1 tools (default is DISABLED)
+ --enable-qemuu-spice    Enable Spice build on qemu upstream
+ --enable-qemuu-usbredir Enable usb redirection build on qemu upstream
   --enable-qemu-traditional
                           Enable qemu traditional device model, (DEFAULT is on
                           for x86, otherwise off)
@@ -3738,6 +3743,18 @@ elif test -z $ax_cv_blktap1; then :
 
 fi
 blktap1=$ax_cv_blktap1
+
+
+
+# Check whether --enable-qemuu-spice was given.
+if test "${enable_qemuu_spice+set}" = set; then :
+  enableval=$enable_qemuu_spice; qemuu_extra_args="$qemuu_extra_args --enable-spice"
+fi
+
+# Check whether --enable-qemuu-usbredir was given.
+if test "${enable_qemuu_usbredir+set}" = set; then :
+  enableval=$enable_qemuu_usbredir; qemuu_extra_args="$qemuu_extra_args --enable-usb-redir"
+fi
 
 
 
