@@ -59,6 +59,14 @@ AX_ARG_DEFAULT_ENABLE([seabios], [Disable SeaBIOS])
 AX_ARG_DEFAULT_ENABLE([debug], [Disable debug build of tools])
 AX_ARG_DEFAULT_DISABLE([blktap1], [Enable blktap1 tools])
 
+AC_ARG_ENABLE([qemuu-spice],
+    [ --enable-qemuu-spice    Enable Spice build on qemu upstream],
+    [qemuu_extra_args="$qemuu_extra_args --enable-spice"])
+AC_ARG_ENABLE([qemuu-usbredir],
+    [ --enable-qemuu-usbredir Enable usb redirection build on qemu upstream],
+    [qemuu_extra_args="$qemuu_extra_args --enable-usb-redir"])
+AC_SUBST(qemuu_extra_args)
+
 AC_ARG_ENABLE([qemu-traditional],
     AS_HELP_STRING([--enable-qemu-traditional],
                    [Enable qemu traditional device model, (DEFAULT is on for x86, otherwise off)]),,[
