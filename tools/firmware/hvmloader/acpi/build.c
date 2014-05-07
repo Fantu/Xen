@@ -30,6 +30,8 @@
 #define align16(sz)        (((sz) + 15) & ~15)
 #define fixed_strcpy(d, s) strncpy((d), (s), sizeof(d))
 
+#define PCI_RMV_BASE 0xae0c
+
 extern struct acpi_20_rsdp Rsdp;
 extern struct acpi_20_rsdt Rsdt;
 extern struct acpi_20_xsdt Xsdt;
@@ -404,6 +406,8 @@ void acpi_build_tables(struct acpi_config *config, unsigned int physical)
     unsigned char       *dsdt;
     unsigned long        secondary_tables[ACPI_MAX_SECONDARY_TABLES];
     int                  nr_secondaries, i;
+    unsigned int rmvc_pcrm = 0;
+    unsigned int len_aml_addr = 0, len_aml_ej0 = 0;
 
     /* Allocate and initialise the acpi info area. */
     mem_hole_populate_ram(ACPI_INFO_PHYSICAL_ADDRESS >> PAGE_SHIFT, 1);
@@ -439,6 +443,24 @@ void acpi_build_tables(struct acpi_config *config, unsigned int physical)
         if (!dsdt) goto oom;
         memcpy(dsdt, config->dsdt_anycpu, config->dsdt_anycpu_len);
         nr_processor_objects = HVM_MAX_VCPUS;
+    }
+    len_aml_addr = config->aml_adr_dword_len/sizeof(config->aml_adr_dword[0]);
+    len_aml_ej0 = config->aml_ej0_name_len/sizeof(config->aml_ej0_name[0]);
+    if (config->aml_adr_dword_len && config->aml_ej0_name_len && (len_aml_addr == len_aml_ej0))
+    {
+        rmvc_pcrm = inl(PCI_RMV_BASE);
+        printf("rmvc_pcrm is %x\n", rmvc_pcrm);
+        for (i = 0;  i < len_aml_addr; i++ ) {
+        /* Slot is in byte 2 in _ADR */
+            unsigned char slot = dsdt[config->aml_adr_dword[i] + 2] & 0x1F;
+            /* Sanity check */
+            if (memcmp(dsdt + config->aml_ej0_name[i], "_EJ0", 4)) {
+                goto oom;
+            }
+            if (!(rmvc_pcrm & (0x1 << slot))) {
+                memcpy(dsdt + config->aml_ej0_name[i], "EJ0_", 4);
+            }
+        }
     }
 
     /*

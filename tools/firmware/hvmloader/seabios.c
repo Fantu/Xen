@@ -33,6 +33,10 @@
 
 extern unsigned char dsdt_anycpu_qemu_xen[];
 extern int dsdt_anycpu_qemu_xen_len;
+extern unsigned short dsdt_anycpu_qemu_xen_aml_ej0_name[];
+extern unsigned short dsdt_anycpu_qemu_xen_aml_adr_dword[];
+extern int dsdt_anycpu_qemu_xen_aml_ej0_name_len;
+extern int dsdt_anycpu_qemu_xen_aml_adr_dword_len;
 
 struct seabios_info {
     char signature[14]; /* XenHVMSeaBIOS\0 */
@@ -99,6 +103,10 @@ static void seabios_acpi_build_tables(void)
         .dsdt_anycpu_len = dsdt_anycpu_qemu_xen_len,
         .dsdt_15cpu = NULL,
         .dsdt_15cpu_len = 0,
+        .aml_ej0_name = dsdt_anycpu_qemu_xen_aml_ej0_name,
+        .aml_adr_dword = dsdt_anycpu_qemu_xen_aml_adr_dword,
+        .aml_ej0_name_len = dsdt_anycpu_qemu_xen_aml_ej0_name_len,
+        .aml_adr_dword_len = dsdt_anycpu_qemu_xen_aml_adr_dword_len,
     };
 
     acpi_build_tables(&config, rsdp);

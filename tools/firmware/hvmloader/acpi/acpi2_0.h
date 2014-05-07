@@ -396,6 +396,10 @@ struct acpi_config {
     int dsdt_anycpu_len;
     unsigned char *dsdt_15cpu;
     int dsdt_15cpu_len;
+    unsigned short *aml_ej0_name;
+    unsigned short *aml_adr_dword;
+    int aml_ej0_name_len;
+    int aml_adr_dword_len;
 };
 
 void acpi_build_tables(struct acpi_config *config, unsigned int physical);
