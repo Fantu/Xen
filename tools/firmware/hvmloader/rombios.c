@@ -179,6 +179,10 @@ static void rombios_acpi_build_tables(void)
         .dsdt_anycpu_len = dsdt_anycpu_len,
         .dsdt_15cpu = dsdt_15cpu,
         .dsdt_15cpu_len = dsdt_15cpu_len,
+        .aml_ej0_name = NULL,
+        .aml_adr_dword = NULL,
+        .aml_ej0_name_len = 0,
+        .aml_adr_dword_len = 0,
     };
 
     acpi_build_tables(&config, ACPI_PHYSICAL_ADDRESS);

@@ -372,7 +372,9 @@ int main(int argc, char **argv)
         /* hotplug_slot */
         for (slot = 1; slot <= 31; slot++) {
             push_block("Device", "S%i", slot); {
+                printf("ACPI_EXTRACT_NAME_DWORD_CONST aml_adr_dword\n");
                 stmt("Name", "_ADR, %#06x0000", slot);
+                printf("ACPI_EXTRACT_METHOD_STRING aml_ej0_name\n");
                 push_block("Method", "_EJ0,1"); {
                     stmt("Store", "ShiftLeft(1, %#06x), B0EJ", slot);
                     stmt("Return", "0x0");
