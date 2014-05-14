@@ -1695,6 +1695,8 @@ skip_vfb:
                         &b_info->spice.clipboard_sharing, 0);
     if (!xlu_cfg_get_long (config, "spiceusbredirection", &l, 0))
         b_info->spice.usbredirection = l;
+    xlu_cfg_replace_string (config, "spice_image_compression",
+                            &b_info->spice.image_compression, 0);
 
     if (c_info->type == LIBXL_DOMAIN_TYPE_HVM) {
         if (!xlu_cfg_get_string (config, "vga", &buf, 0)) {
