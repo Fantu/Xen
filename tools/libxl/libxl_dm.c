@@ -380,6 +380,9 @@ static char *dm_spice_options(libxl__gc *gc,
     if (spice->image_compression)
         opt = libxl__sprintf(gc, "%s,image-compression=%s", opt, spice->image_compression);
 
+    if (spice->image_compression)
+        opt = libxl__sprintf(gc, "%s,streaming-video=%s", opt, spice->streaming_video);
+
     return opt;
 }
 
