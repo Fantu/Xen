@@ -292,6 +292,14 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
         libxl_defbool_setdefault(&b_info->u.hvm.usb,                false);
         libxl_defbool_setdefault(&b_info->u.hvm.xen_platform_pci,   true);
 
+        libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
+        if (!libxl_defbool_val(b_info->u.hvm.spice.enable) &&
+            (b_info->u.hvm.spice.usbredirection > 0) ){
+            b_info->u.hvm.spice.usbredirection = 0;
+            LOG(WARN,"usbredirection is used only by spice, spice is disabled"
+            "therefore usbredirection is disabled.");
+        }
+
         if (!b_info->u.hvm.usbversion &&
             (b_info->u.hvm.spice.usbredirection > 0) )
             b_info->u.hvm.usbversion = 2;
@@ -324,7 +332,6 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
             libxl_defbool_setdefault(&b_info->u.hvm.sdl.opengl, false);
         }
 
-        libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
         if (libxl_defbool_val(b_info->u.hvm.spice.enable)) {
             libxl_defbool_setdefault(&b_info->u.hvm.spice.disable_ticketing,
                                      false);
