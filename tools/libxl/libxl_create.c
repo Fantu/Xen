@@ -215,6 +215,19 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
     if (!b_info->event_channels)
         b_info->event_channels = 1023;
 
+    /* If older u.hvm.spice is enabled then propagate it to the top level */
+    libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
+    libxl_defbool_setdefault(&b_info->spice.enable, false);
+    if (!libxl_defbool_val(b_info->spice.enable) &&
+        libxl_defbool_val(b_info->u.hvm.spice.enable)) {
+            libxl_spice_info_copy(ctx, &b_info->spice, b_info->u.hvm.spice); 
+    }
+
+    libxl_defbool_setdefault(&b_info->spice.disable_ticketing, false);
+    libxl_defbool_setdefault(&b_info->spice.agent_mouse, true);
+    libxl_defbool_setdefault(&b_info->spice.vdagent, false);
+    libxl_defbool_setdefault(&b_info->spice.clipboard_sharing, false);
+
     switch (b_info->type) {
     case LIBXL_DOMAIN_TYPE_HVM:
         if (b_info->shadow_memkb == LIBXL_MEMKB_DEFAULT)
@@ -314,18 +327,17 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
         libxl_defbool_setdefault(&b_info->u.hvm.usb,                false);
         libxl_defbool_setdefault(&b_info->u.hvm.xen_platform_pci,   true);
 
-        libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
-        if (!libxl_defbool_val(b_info->u.hvm.spice.enable) &&
-            (b_info->u.hvm.spice.usbredirection > 0) ){
-            b_info->u.hvm.spice.usbredirection = 0;
-            LOG(WARN, "spice disabled, disabling usbredirection");
+        if (!libxl_defbool_val(b_info->spice.enable) &&
+            (b_info->spice.usbredirection > 0) ){
+            b_info->spice.usbredirection = 0;
+            LOG(WARN,"spice disabled, disabling usbredirection");
         }
 
         if (!b_info->u.hvm.usbversion &&
-            (b_info->u.hvm.spice.usbredirection > 0) )
+            (b_info->spice.usbredirection > 0) )
             b_info->u.hvm.usbversion = 2;
 
-        if ((b_info->u.hvm.usbversion || b_info->u.hvm.spice.usbredirection) &&
+        if ((b_info->u.hvm.usbversion || b_info->spice.usbredirection) &&
             ( libxl_defbool_val(b_info->u.hvm.usb)
             || b_info->u.hvm.usbdevice_list
             || b_info->u.hvm.usbdevice) ){
@@ -347,15 +359,6 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
         libxl_defbool_setdefault(&b_info->u.hvm.sdl.enable, false);
         if (libxl_defbool_val(b_info->u.hvm.sdl.enable)) {
             libxl_defbool_setdefault(&b_info->u.hvm.sdl.opengl, false);
-        }
-
-        if (libxl_defbool_val(b_info->u.hvm.spice.enable)) {
-            libxl_defbool_setdefault(&b_info->u.hvm.spice.disable_ticketing,
-                                     false);
-            libxl_defbool_setdefault(&b_info->u.hvm.spice.agent_mouse, true);
-            libxl_defbool_setdefault(&b_info->u.hvm.spice.vdagent, false);
-            libxl_defbool_setdefault(&b_info->u.hvm.spice.clipboard_sharing,
-                                     false);
         }
 
         libxl_defbool_setdefault(&b_info->u.hvm.nographic, false);
@@ -391,6 +394,20 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
             b_info->cmdline = b_info->u.pv.cmdline;
             b_info->u.pv.cmdline = NULL;
         }
+
+        if (libxl_defbool_val(b_info->spice.vdagent)) {
+            libxl_defbool_set(&b_info->spice.vdagent, false);
+            LOG(WARN, "vdagent is not supported for PV guests");
+        }
+        if (libxl_defbool_val(b_info->spice.clipboard_sharing)) {
+            libxl_defbool_set(&b_info->spice.clipboard_sharing, false);
+            LOG(WARN, "clipboard sharing is not supported for PV guests");
+        }
+        if (b_info->spice.usbredirection > 0) {
+            b_info->spice.usbredirection = 0;
+            LOG(WARN, "usbredirection is not supported for PV guests");
+        }
+
         break;
     default:
         LOG(ERROR, "invalid domain type %s in create info",
