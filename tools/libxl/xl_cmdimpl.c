@@ -2335,6 +2335,8 @@ skip_usbdev:
 
 #undef parse_extra_args
 
+    xlu_cfg_get_defbool (config, "spice", &b_info->spice.enable, 0);
+
     /* If we've already got vfb=[] for PV guest then ignore top level
      * VNC config. */
     if (c_info->type == LIBXL_DOMAIN_TYPE_PV && !d_config->num_vfbs) {
@@ -2343,7 +2345,7 @@ skip_usbdev:
         if (!xlu_cfg_get_long (config, "vnc", &l, 0))
             vnc_enabled = l;
 
-        if (vnc_enabled) {
+        if (vnc_enabled || libxl_defbool_val(b_info->spice.enable)) {
             libxl_device_vfb *vfb;
             libxl_device_vkb *vkb;
 
@@ -2361,6 +2363,30 @@ skip_usbdev:
         parse_top_level_vnc_options(config, &b_info->u.hvm.vnc);
         parse_top_level_sdl_options(config, &b_info->u.hvm.sdl);
     }
+
+    if (!xlu_cfg_get_long (config, "spiceport", &l, 0))
+        b_info->spice.port = l;
+    if (!xlu_cfg_get_long (config, "spicetls_port", &l, 0))
+        b_info->spice.tls_port = l;
+    xlu_cfg_replace_string (config, "spicehost",
+                            &b_info->spice.host, 0);
+    xlu_cfg_get_defbool(config, "spicedisable_ticketing",
+                        &b_info->spice.disable_ticketing, 0);
+    xlu_cfg_replace_string(config, "spicepasswd",
+                            &b_info->spice.passwd, 0);
+    xlu_cfg_get_defbool(config, "spiceagent_mouse",
+                        &b_info->spice.agent_mouse, 0);
+    /* These SPICE features are not supported by PV domU */
+    xlu_cfg_get_defbool(config, "spicevdagent",
+                        &b_info->spice.vdagent, 0);
+    xlu_cfg_get_defbool(config, "spice_clipboard_sharing",
+                        &b_info->spice.clipboard_sharing, 0);
+    if (!xlu_cfg_get_long (config, "spiceusbredirection", &l, 0))
+        b_info->spice.usbredirection = l;
+    xlu_cfg_replace_string (config, "spice_image_compression",
+                            &b_info->spice.image_compression, 0);
+    xlu_cfg_replace_string (config, "spice_streaming_video",
+                            &b_info->spice.streaming_video, 0);
 
     if (c_info->type == LIBXL_DOMAIN_TYPE_HVM) {
         if (!xlu_cfg_get_string (config, "vga", &buf, 0)) {
@@ -2388,29 +2414,6 @@ skip_usbdev:
         }
 
         xlu_cfg_replace_string (config, "keymap", &b_info->u.hvm.keymap, 0);
-        xlu_cfg_get_defbool (config, "spice", &b_info->u.hvm.spice.enable, 0);
-        if (!xlu_cfg_get_long (config, "spiceport", &l, 0))
-            b_info->u.hvm.spice.port = l;
-        if (!xlu_cfg_get_long (config, "spicetls_port", &l, 0))
-            b_info->u.hvm.spice.tls_port = l;
-        xlu_cfg_replace_string (config, "spicehost",
-                                &b_info->u.hvm.spice.host, 0);
-        xlu_cfg_get_defbool(config, "spicedisable_ticketing",
-                            &b_info->u.hvm.spice.disable_ticketing, 0);
-        xlu_cfg_replace_string (config, "spicepasswd",
-                                &b_info->u.hvm.spice.passwd, 0);
-        xlu_cfg_get_defbool(config, "spiceagent_mouse",
-                            &b_info->u.hvm.spice.agent_mouse, 0);
-        xlu_cfg_get_defbool(config, "spicevdagent",
-                            &b_info->u.hvm.spice.vdagent, 0);
-        xlu_cfg_get_defbool(config, "spice_clipboard_sharing",
-                            &b_info->u.hvm.spice.clipboard_sharing, 0);
-        if (!xlu_cfg_get_long (config, "spiceusbredirection", &l, 0))
-            b_info->u.hvm.spice.usbredirection = l;
-        xlu_cfg_replace_string (config, "spice_image_compression",
-                                &b_info->u.hvm.spice.image_compression, 0);
-        xlu_cfg_replace_string (config, "spice_streaming_video",
-                                &b_info->u.hvm.spice.streaming_video, 0);
         xlu_cfg_get_defbool(config, "nographic", &b_info->u.hvm.nographic, 0);
         if (!xlu_cfg_get_long(config, "gfx_passthru", &l, 1)) {
             libxl_defbool_set(&b_info->u.hvm.gfx_passthru, l);
