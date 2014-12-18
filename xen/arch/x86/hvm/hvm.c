@@ -5462,6 +5462,40 @@ static int hvmop_destroy_ioreq_server(
     return rc;
 }
 
+static int hvmop_set_evtchn_upcall_vector(
+    XEN_GUEST_HANDLE_PARAM(xen_hvm_set_evtchn_upcall_vector_t) uop)
+{
+    xen_hvm_set_evtchn_upcall_vector_t op;
+    struct domain *d;
+    struct vcpu *v;
+    int rc;
+
+    if ( copy_from_guest(&op, uop, 1) )
+        return -EFAULT;
+
+    d = rcu_lock_current_domain();
+
+    rc = -EINVAL;
+    if ( !is_hvm_domain(d) )
+        goto out;
+
+    if ( op.vector < 0x10 )
+        goto out;
+
+    rc = -ENOENT;
+    if ( op.vcpu >= d->max_vcpus || (v = d->vcpu[op.vcpu]) == NULL )
+        goto out;
+
+    printk(XENLOG_G_INFO "%pv: %s %u\n", v, __func__, op.vector);
+
+    v->arch.hvm_vcpu.evtchn_upcall_vector = op.vector;
+    rc = 0;
+
+ out:
+    rcu_unlock_domain(d);
+    return rc;
+}
+
 /*
  * Note that this value is effectively part of the ABI, even if we don't need
  * to make it a formal part of it: A guest suspended for migration in the
@@ -5519,6 +5553,11 @@ long do_hvm_op(unsigned long op, XEN_GUEST_HANDLE_PARAM(void) arg)
     case HVMOP_destroy_ioreq_server:
         rc = hvmop_destroy_ioreq_server(
             guest_handle_cast(arg, xen_hvm_destroy_ioreq_server_t));
+        break;
+    
+    case HVMOP_set_evtchn_upcall_vector:
+        rc = hvmop_set_evtchn_upcall_vector(
+            guest_handle_cast(arg, xen_hvm_set_evtchn_upcall_vector_t));
         break;
     
     case HVMOP_set_param:
@@ -6142,7 +6181,7 @@ long do_hvm_op(unsigned long op, XEN_GUEST_HANDLE_PARAM(void) arg)
 
     if ( rc == -ERESTART )
     {
-        ASSERT(!(start_iter & mask));
+        ASSERT(!(start_iter & HVMOP_op_mask));
         rc = hypercall_create_continuation(__HYPERVISOR_hvm_op, "lh",
                                            op | start_iter, arg);
     }

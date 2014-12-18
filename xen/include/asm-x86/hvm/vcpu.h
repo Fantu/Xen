@@ -160,6 +160,7 @@ struct hvm_vcpu {
     } u;
 
     struct tasklet      assert_evtchn_irq_tasklet;
+    u8                  evtchn_upcall_vector;
 
     struct nestedvcpu   nvcpu;
 
