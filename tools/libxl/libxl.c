@@ -2332,6 +2332,13 @@ int libxl__device_from_disk(libxl__gc *gc, uint32_t domid,
     device->backend_domid = disk->backend_domid;
     device->backend_devid = devid;
 
+    if (disk->protocol == LIBXL_DISK_PROTOCOL_VIRTIO) {
+        LIBXL__LOG(ctx, LIBXL__LOG_INFO, "Using QEMU virtio backend for"
+                   " virtual disk %s", disk->vdev);
+        disk->backend = LIBXL_DISK_BACKEND_VIRTIO;
+        device->backend_kind = LIBXL__DEVICE_KIND_VIRTIO;
+    }
+
     switch (disk->backend) {
         case LIBXL_DISK_BACKEND_PHY:
             device->backend_kind = LIBXL__DEVICE_KIND_VBD;
@@ -2341,6 +2348,9 @@ int libxl__device_from_disk(libxl__gc *gc, uint32_t domid,
             break;
         case LIBXL_DISK_BACKEND_QDISK:
             device->backend_kind = LIBXL__DEVICE_KIND_QDISK;
+            break;
+        case LIBXL_DISK_BACKEND_VIRTIO:
+            device->backend_kind = LIBXL__DEVICE_KIND_VIRTIO;
             break;
         default:
             LIBXL__LOG(ctx, LIBXL__LOG_ERROR, "unrecognized disk backend type: %d\n",
@@ -2509,7 +2519,13 @@ static void device_disk_add(libxl__egc *egc, uint32_t domid,
                               libxl__device_disk_string_of_format(disk->format), disk->pdev_path));
                 assert(device->backend_kind == LIBXL__DEVICE_KIND_QDISK);
                 break;
-            default:
+            case LIBXL_DISK_BACKEND_VIRTIO:
+                flexarray_append(back, "params");
+                flexarray_append(back, libxl__sprintf(&gc, "%s:%s",
+                                libxl__device_disk_string_of_format(disk->format), disk->pdev_path));
+                assert(device->backend_kind == LIBXL__DEVICE_KIND_VIRTIO);
+                break;
+                default:
                 LIBXL__LOG(ctx, LIBXL__LOG_ERROR, "unrecognized disk backend type: %d\n", disk->backend);
                 rc = ERROR_INVAL;
                 goto out;
@@ -3103,6 +3119,11 @@ void libxl__device_disk_local_initiate_attach(libxl__egc *egc,
             }
             LOG(DEBUG, "locally attaching qdisk %s", dev);
             break;
+        case LIBXL_DISK_BACKEND_VIRTIO:
+            LIBXL__LOG(ctx, LIBXL__LOG_ERROR, "unable to attach a virtio disk"
+                       " backend, not implemented yet\n");
+            rc = ERROR_INVAL;
+            goto out;
         default:
             LIBXL__LOG(ctx, LIBXL__LOG_ERROR, "unrecognized disk backend "
                 "type: %d", disk->backend);

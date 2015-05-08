@@ -8,7 +8,7 @@ emulated IDE or SCSI disks.
 The abstract interface involves specifying, for each block device:
 
  * Nominal disk type: Xen virtual disk (aka xvd*, the default); SCSI
-   (sd*); IDE (hd*).
+   (sd*); IDE (hd*); Virtio disk (vd*).
 
    For HVM guests, each whole-disk hd* and and sd* device is made
    available _both_ via emulated IDE resp. SCSI controller, _and_ as a
@@ -54,6 +54,7 @@ The config file syntaxes are, for example
        d536p37  xvdtq37  Xen virtual disk 536 partition 37
        sdb3              SCSI disk 1 partition 3
        hdc2              IDE disk 2 partition 2
+       vda               Virtio disk 0 (whole disk)
 
 The d*p* syntax is not supported by xm/xend.
 

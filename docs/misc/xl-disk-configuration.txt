@@ -98,7 +98,7 @@ vdev
 Description:           Virtual device as seen by the guest (also
                        referred to as guest drive designation in some
                        specifications).  See docs/misc/vbd-interface.txt.
-Supported values:      hd[x], xvd[x], sd[x] etc.  Please refer to the
+Supported values:      hd[x], xvd[x], sd[x], vd[x] etc.  Please refer to the
                        above specification for further details.
 Deprecated values:     None
 Default Value:         None, this parameter is mandatory.

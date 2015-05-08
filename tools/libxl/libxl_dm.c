@@ -858,6 +858,10 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
                     drive = libxl__sprintf
                         (gc, "file=%s,if=scsi,bus=0,unit=%d,format=%s,cache=writeback",
                          pdev_path, disk, format);
+                else if (strncmp(disks[i].vdev, "vd", 2) == 0)
+                    drive = libxl__sprintf
+                        (gc, "file=%s,if=virtio,index=%d,media=disk,format=%s",
+                         disks[i].pdev_path, disk ,format);
                 else if (disk < 4)
                     drive = libxl__sprintf
                         (gc, "file=%s,if=ide,index=%d,media=disk,format=%s,cache=writeback",

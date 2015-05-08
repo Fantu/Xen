@@ -238,6 +238,9 @@ static int disk_try_backend(disk_try_backend_args *a,
         if (a->disk->script) goto bad_script;
         return backend;
 
+    case LIBXL_DISK_BACKEND_VIRTIO:
+        return backend;
+
     default:
         LOG(DEBUG, "Disk vdev=%s, backend %d unknown", a->disk->vdev, backend);
         return 0;
@@ -323,6 +326,7 @@ char *libxl__device_disk_string_of_backend(libxl_disk_backend backend)
         case LIBXL_DISK_BACKEND_QDISK: return "qdisk";
         case LIBXL_DISK_BACKEND_TAP: return "phy";
         case LIBXL_DISK_BACKEND_PHY: return "phy";
+        case LIBXL_DISK_BACKEND_VIRTIO: return "virtio";
         default: return NULL;
     }
 }
@@ -432,6 +436,14 @@ int libxl__device_disk_dev_number(const char *virtpath, int *pdisk,
         if (pdisk) *pdisk = disk;
         if (ppartition) *ppartition = partition;
         return (8 << 8) | (disk << 4) | partition;
+    }
+    if (device_virtdisk_matches(virtpath, "vd",
+                                &disk, 15,
+                                &partition, 15)) {
+        if (pdisk) *pdisk = disk;
+        if (ppartition) *ppartition = partition;
+        if (partition > 0) return -1; /* Only support whole disk */
+        return disk;
     }
     return -1;
 }

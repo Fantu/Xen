@@ -105,6 +105,12 @@ libxl_disk_backend = Enumeration("disk_backend", [
     (1, "PHY"),
     (2, "TAP"),
     (3, "QDISK"),
+    (4, "VIRTIO"),
+    ])
+
+libxl_disk_protocol = Enumeration("disk_protocol", [
+    (1, "XENVBD"),
+    (2, "VIRTIO"),
     ])
 
 libxl_nic_type = Enumeration("nic_type", [
@@ -496,6 +502,7 @@ libxl_device_disk = Struct("device_disk", [
     ("pdev_path", string),
     ("vdev", string),
     ("backend", libxl_disk_backend),
+    ("protocol", libxl_disk_protocol),
     ("format", libxl_disk_format),
     ("script", string),
     ("removable", integer),

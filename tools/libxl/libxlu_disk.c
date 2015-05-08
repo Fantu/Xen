@@ -88,6 +88,10 @@ int xlu_disk_parse(XLU_Config *cfg,
         xlu__disk_err(&dpc,0,"no target specified (and device not removable)");
         goto x_err;
     }
+    if (!strncmp(disk->vdev, "vd", 2))
+        disk->protocol = LIBXL_DISK_PROTOCOL_VIRTIO;
+    else
+        disk->protocol = LIBXL_DISK_PROTOCOL_XENVBD;
 
  x_err:
     dpc_dispose(&dpc);
