@@ -1102,7 +1102,6 @@ static int libxl__build_device_model_args_new(libxl__gc *gc,
             int dev_number =
                 libxl__device_disk_dev_number(disks[i].vdev, &disk, &part);
             const char *format = qemu_disk_format_string(disks[i].format);
-            char *drive;
             const char *pdev_path;
 
             if (dev_number == -1) {
@@ -1113,13 +1112,15 @@ static int libxl__build_device_model_args_new(libxl__gc *gc,
 
             if (disks[i].is_cdrom) {
                 if (disks[i].format == LIBXL_DISK_FORMAT_EMPTY)
-                    drive = libxl__sprintf
-                        (gc, "if=ide,index=%d,media=cdrom,cache=writeback,id=ide-%i",
-                         disk, dev_number);
+                    flexarray_vappend(dm_args, "-drive",
+                        GCSPRINTF("if=none,id=ide-%i,cache=writeback",
+                        dev_number), "-device",
+                        GCSPRINTF("ide-cd,drive=ide-%i", dev_number), NULL);
                 else
-                    drive = libxl__sprintf
-                        (gc, "file=%s,if=ide,index=%d,media=cdrom,format=%s,cache=writeback,id=ide-%i",
-                         disks[i].pdev_path, disk, format, dev_number);
+                    flexarray_vappend(dm_args, "-drive",
+                        GCSPRINTF("file=%s,if=none,id=ide-%i,format=%s,cache=writeback",
+                        disks[i].pdev_path, dev_number, format), "-device",
+                        GCSPRINTF("ide-cd,drive=ide-%i", dev_number), NULL);
             } else {
                 if (disks[i].format == LIBXL_DISK_FORMAT_EMPTY) {
                     LIBXL__LOG(ctx, LIBXL__LOG_WARNING, "cannot support"
@@ -1148,26 +1149,27 @@ static int libxl__build_device_model_args_new(libxl__gc *gc,
                  * hd[a-d] and ignore the rest.
                  */
                 if (strncmp(disks[i].vdev, "sd", 2) == 0)
-                    drive = libxl__sprintf
-                        (gc, "file=%s,if=scsi,bus=0,unit=%d,format=%s,cache=writeback",
-                         pdev_path, disk, format);
+                    flexarray_vappend(dm_args, "-drive",
+                        GCSPRINTF("file=%s,if=none,id=scsidisk-%d,format=%s,cache=writeback",
+                        pdev_path, disk, format), "-device",
+                        GCSPRINTF("scsi-hd,drive=scsidisk-%d,scsi-id=%d",
+                        disk, disk), NULL);
                 else if (disk < 6 && b_info->u.hvm.hdtype == LIBXL_HDTYPE_AHCI) {
                     flexarray_vappend(dm_args, "-drive",
                         GCSPRINTF("file=%s,if=none,id=ahcidisk-%d,format=%s,cache=writeback",
-                        pdev_path, disk, format),
-                        "-device", GCSPRINTF("ide-hd,bus=ahci0.%d,unit=0,drive=ahcidisk-%d",
+                        pdev_path, disk, format), "-device",
+                        GCSPRINTF("ide-hd,bus=ahci0.%d,unit=0,drive=ahcidisk-%d",
                         disk, disk), NULL);
-                    continue;
                 } else if (disk < 4)
-                    drive = libxl__sprintf
-                        (gc, "file=%s,if=ide,index=%d,media=disk,format=%s,cache=writeback",
-                         pdev_path, disk, format);
+                    flexarray_vappend(dm_args, "-drive",
+                        GCSPRINTF("file=%s,if=none,id=idedisk-%d,format=%s,cache=writeback",
+                        pdev_path, disk, format),
+                        "-device", GCSPRINTF("ide-hd,drive=idedisk-%d",
+                        disk), NULL);
                 else
                     continue; /* Do not emulate this disk */
             }
 
-            flexarray_append(dm_args, "-drive");
-            flexarray_append(dm_args, drive);
         }
 
         switch (b_info->u.hvm.vendor_device) {
