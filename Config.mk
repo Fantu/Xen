@@ -17,7 +17,7 @@ or       = $(if $(strip $(1)),$(1),$(if $(strip $(2)),$(2),$(if $(strip $(3)),$(
 -include $(XEN_ROOT)/.config
 
 # A debug build of Xen and tools?
-debug ?= n
+debug ?= y
 debug_symbols ?= $(debug)
 
 # Test coverage support
@@ -75,7 +75,7 @@ EXTRA_LIB += $(EXTRA_PREFIX)/lib
 endif
 
 PYTHON      ?= python
-PYTHON_PREFIX_ARG ?= --prefix="$(prefix)"
+PYTHON_PREFIX_ARG ?=
 # The above requires that prefix contains *no spaces*. This variable is here
 # to permit the user to set PYTHON_PREFIX_ARG to '' to workaround this bug:
 #  https://bugs.launchpad.net/ubuntu/+bug/362570
