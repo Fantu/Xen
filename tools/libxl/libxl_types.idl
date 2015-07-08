@@ -195,6 +195,11 @@ libxl_viridian_enlightenment = Enumeration("viridian_enlightenment", [
     (2, "time_ref_count"),
     ])
 
+libxl_hdtype = Enumeration("hdtype", [
+    (1, "IDE"),
+    (2, "AHCI"),
+    ], init_val = "LIBXL_HDTYPE_IDE")
+
 #
 # Complex libxl types
 #
@@ -421,6 +426,7 @@ libxl_domain_build_info = Struct("domain_build_info",[
                                        ("nested_hvm",       libxl_defbool),
                                        ("smbios_firmware",  string),
                                        ("acpi_firmware",    string),
+                                       ("hdtype",           libxl_hdtype),
                                        ("nographic",        libxl_defbool),
                                        ("vga",              libxl_vga_interface_info),
                                        ("vnc",              libxl_vnc_info),
