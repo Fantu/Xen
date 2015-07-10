@@ -266,6 +266,7 @@ libxl_spice_info = Struct("spice_info", [
     ("usbredirection", integer),
     ("image_compression", string),
     ("streaming_video", string),
+    ("video_codecs", string),
     ])
 
 libxl_sdl_info = Struct("sdl_info", [
