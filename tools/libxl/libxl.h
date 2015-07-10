@@ -601,6 +601,17 @@ typedef struct libxl__ctx libxl_ctx;
 #define LIBXL_HAVE_SPICE_STREAMINGVIDEO 1
 
 /*
+ * LIBXL_HAVE_SPICE_VIDEOCODECS
+ *
+ * If defined, then the libxl_spice_info structure will contain a string type
+ * field: video_codecs. This value defines what Spice video codecs setting
+ * is used.
+ *
+ * If this is not defined, the Spice video codecs setting support is ignored.
+ */
+#define LIBXL_HAVE_SPICE_VIDEOCODECS 1
+
+/*
  * LIBXL_HAVE_HVM_HDTYPE
  *
  * If defined, then the u.hvm structure will contain a enum type
