@@ -1225,16 +1225,11 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
     {
         libxl__device_console console;
         libxl__device device;
-        libxl_device_vkb vkb;
 
         init_console_info(gc, &console, 0);
         console.backend_domid = state->console_domid;
         libxl__device_console_add(gc, domid, &console, state, &device);
         libxl__device_console_dispose(&console);
-
-        libxl_device_vkb_init(&vkb);
-        libxl__device_vkb_add(gc, domid, &vkb);
-        libxl_device_vkb_dispose(&vkb);
 
         dcs->dmss.dm.guest_domid = domid;
         if (libxl_defbool_val(d_config->b_info.device_model_stubdomain))
