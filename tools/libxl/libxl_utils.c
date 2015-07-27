@@ -1212,6 +1212,16 @@ int libxl__random_bytes(libxl__gc *gc, uint8_t *buf, size_t len)
     return ret;
 }
 
+void libxl__replace_chr(libxl__gc *gc, char *s, char old, char new)
+{
+	int i = 0;
+
+	for (i = 0; s[i] != '\0'; i++) {
+		if (s[i] == old)
+			s[i] = new;
+	}
+}
+
 /*
  * Local variables:
  * mode: C

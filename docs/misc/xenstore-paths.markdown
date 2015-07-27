@@ -397,6 +397,14 @@ The device model version for a domain.
 
 ifb device used by Remus to buffer network output from the associated vif.
 
+#### ~/libxl/$DEVICE_MODEL_BINARY/* [n,INTERNAL]
+
+Contains a list of options supported by the device model, in the form:
+"$OPTION" = ("1"|"0").
+$DEVICE_MODEL_BINARY is the full path to the device model binary with
+'/' replaced by '_'. So for example /usr/lib/xen/bin/qemu-system-i386
+would be /libxl/_usr_lib_xen_bin_qemu-system-i386.
+
 [BLKIF]: http://xenbits.xen.org/docs/unstable/hypercall/include,public,io,blkif.h.html
 [FBIF]: http://xenbits.xen.org/docs/unstable/hypercall/include,public,io,fbif.h.html
 [HVMPARAMS]: http://xenbits.xen.org/docs/unstable/hypercall/include,public,hvm,params.h.html

@@ -462,6 +462,65 @@ retry:
     return 0;
 }
 
+int libxl__check_qemu_supported(libxl__gc *gc, const char *dm, char *opt)
+{
+    libxl_ctx *ctx = libxl__gc_owner(gc);
+    pid_t pid;
+    int pipefd[2], status;
+    FILE *fp;
+    char *buf;
+    ssize_t buf_size = 512;
+    int ret = 0;
+    char *s;
+
+    s = libxl__strdup(gc, dm);
+    libxl__replace_chr(gc, s, '/', '_');
+    s = libxl__sprintf(gc, "libxl/%s/%s", s, opt);
+    buf = libxl__xs_read(gc, XBT_NULL, s);
+    if (buf != NULL)
+        return !strcmp(buf, "1");
+
+    if (access(dm, X_OK) < 0) {
+        LIBXL__LOG_ERRNO(ctx, LIBXL__LOG_ERROR,
+                         "device model %s is not executable", dm);
+        return ERROR_FAIL;
+    }
+
+    if (libxl_pipe(ctx, pipefd) < 0)
+        return ERROR_FAIL;
+
+    pid = fork();
+    if (pid < 0)
+        return ERROR_FAIL;
+
+    /* child spawn QEMU */
+    if (!pid) {
+        char *args[] = {(char*)dm, "--help", NULL};
+        close(pipefd[0]);
+        libxl__exec(gc, -1, pipefd[1], pipefd[1], dm, args, NULL);
+        exit(1);
+    }
+
+    /* parent parses the output */
+    close(pipefd[1]);
+    fp = fdopen(pipefd[0], "r");
+    buf = libxl__malloc(gc, buf_size);
+    while (fgets(buf, buf_size, fp) != NULL) {
+        if (strstr(buf, opt) != NULL) {
+            ret = 1;
+            goto out;
+        }
+    }
+out:
+    close(pipefd[0]);
+    waitpid(pid, &status, pid);
+    libxl_report_child_exitstatus(ctx, XTL_WARN, dm, pid, status);
+
+    ret = libxl__xs_write(gc, XBT_NULL, s, "%d", ret);
+
+    return ret;
+}
+
 static int libxl__build_device_model_args_new(libxl__gc *gc,
                                         const char *dm, int guest_domid,
                                         const libxl_domain_config *guest_config,
@@ -963,6 +1022,14 @@ end_search:
         if (user) {
             flexarray_append(dm_args, "-runas");
             flexarray_append(dm_args, user);
+            if (libxl__check_qemu_supported(gc, dm, "xsrestrict") &&
+                libxl__check_qemu_supported(gc, dm, "emulator_id")) {
+                flexarray_append(dm_args, "-xenopts");
+                flexarray_append(dm_args,
+                        GCSPRINTF("xsrestrict=on,emulator_id=%u",
+                            (b_info->type == LIBXL_DOMAIN_TYPE_PV) ?
+                            QEMU_XEN_PV_ID : QEMU_XEN_DEVICE_MODEL_ID));
+            }
         }
     }
     flexarray_append(dm_args, NULL);
@@ -1677,6 +1744,11 @@ void libxl__spawn_qdisk_backend(libxl__egc *egc, libxl__dm_spawn_state *dmss)
     flexarray_vappend(dm_args, "-monitor", "/dev/null", NULL);
     flexarray_vappend(dm_args, "-serial", "/dev/null", NULL);
     flexarray_vappend(dm_args, "-parallel", "/dev/null", NULL);
+    if (libxl__check_qemu_supported(gc, dm, "emulator_id")) {
+        flexarray_append(dm_args, "-xenopts");
+        flexarray_append(dm_args,
+                GCSPRINTF("emulator_id=%u", QEMU_XEN_PV_ID));
+    }
     flexarray_append(dm_args, NULL);
     args = (char **) flexarray_contents(dm_args);
 

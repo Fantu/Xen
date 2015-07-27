@@ -109,6 +109,10 @@
 #define STUBDOM_SPECIAL_CONSOLES 3
 #define TAP_DEVICE_SUFFIX "-emu"
 #define DOMID_XS_PATH "domid"
+/* Reserved QEMU emulator_ids. For the moment assume max two QEMUs: one
+ * device model and one PV backends provider. */
+#define QEMU_XEN_DEVICE_MODEL_ID  0
+#define QEMU_XEN_PV_ID            1
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -1583,6 +1587,7 @@ _hidden int libxl__need_xenpv_qemu(libxl__gc *gc,
         int nr_vfbs, libxl_device_vfb *vfbs,
         int nr_disks, libxl_device_disk *disks,
         int nr_channels, libxl_device_channel *channels);
+_hidden int libxl__check_qemu_supported(libxl__gc *gc, const char *dm, char *opt);
 
 /*
  * This function will cause the whole libxl process to hang
@@ -3843,6 +3848,8 @@ int libxl__string_parse_json(libxl__gc *gc, const libxl__json_object *o,
                              char **p);
 
 int libxl__random_bytes(libxl__gc *gc, uint8_t *buf, size_t len);
+/* replace all occurrences of old with new inside s */
+void libxl__replace_chr(libxl__gc *gc, char *s, char old, char new);
 
 /*
  * Compile time assertion
