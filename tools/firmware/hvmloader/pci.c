@@ -154,8 +154,9 @@ void pci_setup(void)
         if ( (vendor_id == 0xffff) && (device_id == 0xffff) )
             continue;
 
-        ASSERT((devfn != PCI_ISA_DEVFN) ||
-               ((vendor_id == 0x8086) && (device_id == 0x7000)));
+        /* Commented this assertion to make possible use q35 chipset
+         * ASSERT((devfn != PCI_ISA_DEVFN) ||
+               ((vendor_id == 0x8086) && (device_id == 0x7000)));*/
 
         switch ( class )
         {
