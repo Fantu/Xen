@@ -2720,7 +2720,7 @@ int hvm_send_ioreq(struct hvm_ioreq_server *s, ioreq_t *proto_p,
         return hvm_send_buffered_ioreq(s, proto_p);
 
     if ( unlikely(!vcpu_start_shutdown_deferral(curr)) )
-        return X86EMUL_RETRY;
+        return X86EMUL_OKAY;
 
     list_for_each_entry ( sv,
                           &s->ioreq_vcpu_list,

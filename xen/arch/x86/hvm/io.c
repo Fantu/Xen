@@ -140,6 +140,10 @@ int handle_pio(uint16_t port, unsigned int size, int dir)
 
     rc = hvmemul_do_pio_buffer(port, size, dir, &data);
 
+    /* We should not advance RIP/EIP if the domain is shutting down */
+    if ( curr->domain->is_shutting_down )
+            return 0;
+
     if ( hvm_vcpu_io_need_completion(vio) )
         vio->io_completion = HVMIO_pio_completion;
 
@@ -155,13 +159,10 @@ int handle_pio(uint16_t port, unsigned int size, int dir)
         }
         break;
     case X86EMUL_RETRY:
-        /* We should not advance RIP/EIP if the domain is shutting down */
-        if ( curr->domain->is_shutting_down )
-            return 0;
-
         break;
     default:
         gdprintk(XENLOG_ERR, "Weird HVM ioemulation status %d.\n", rc);
+        WARN();
         domain_crash(curr->domain);
         break;
     }
