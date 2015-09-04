@@ -16,7 +16,8 @@
 int create_grant_host_mapping(uint64_t addr, unsigned long frame,
 			      unsigned int flags, unsigned int cache_flags);
 int replace_grant_host_mapping(
-    uint64_t addr, unsigned long frame, uint64_t new_addr, unsigned int flags);
+    uint64_t addr, unsigned long frame, uint64_t new_addr, unsigned int flags,
+    int *page_accessed);
 
 #define gnttab_create_shared_page(d, t, i)                               \
     do {                                                                 \

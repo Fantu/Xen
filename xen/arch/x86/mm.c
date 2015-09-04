@@ -3986,7 +3986,8 @@ static int create_grant_va_mapping(
 }
 
 static int replace_grant_va_mapping(
-    unsigned long addr, unsigned long frame, l1_pgentry_t nl1e, struct vcpu *v)
+    unsigned long addr, unsigned long frame, l1_pgentry_t nl1e, struct vcpu *v,
+    int *page_accessed)
 {
     l1_pgentry_t *pl1e, ol1e;
     unsigned long gl1mfn;
@@ -4032,12 +4033,13 @@ static int replace_grant_va_mapping(
     }
 
     /* Delete pagetable entry. */
-    if ( unlikely(!UPDATE_ENTRY(l1, pl1e, ol1e, nl1e, gl1mfn, v, 0)) )
+    if ( unlikely(!UPDATE_ENTRY(l1, pl1e, ol1e, nl1e, gl1mfn, v, 1)) )
     {
         MEM_LOG("Cannot delete PTE entry at %p", (unsigned long *)pl1e);
         rc = GNTST_general_error;
         goto unlock_and_out;
     }
+    *page_accessed = !!(l1e_get_flags(*pl1e) & _PAGE_ACCESSED);
 
  unlock_and_out:
     page_unlock(l1pg);
@@ -4048,9 +4050,9 @@ static int replace_grant_va_mapping(
 }
 
 static int destroy_grant_va_mapping(
-    unsigned long addr, unsigned long frame, struct vcpu *v)
+    unsigned long addr, unsigned long frame, struct vcpu *v, int *page_accessed)
 {
-    return replace_grant_va_mapping(addr, frame, l1e_empty(), v);
+    return replace_grant_va_mapping(addr, frame, l1e_empty(), v, page_accessed);
 }
 
 static int create_grant_p2m_mapping(uint64_t addr, unsigned long frame,
@@ -4085,7 +4087,7 @@ int create_grant_host_mapping(uint64_t addr, unsigned long frame,
         return create_grant_p2m_mapping(addr, frame, flags, cache_flags);
 
     grant_pte_flags =
-        _PAGE_PRESENT | _PAGE_ACCESSED | _PAGE_DIRTY | _PAGE_GNTTAB;
+        _PAGE_PRESENT | _PAGE_GNTTAB;
     if ( cpu_has_nx )
         grant_pte_flags |= _PAGE_NX_BIT;
 
@@ -4132,7 +4134,8 @@ static int replace_grant_p2m_mapping(
 }
 
 int replace_grant_host_mapping(
-    uint64_t addr, unsigned long frame, uint64_t new_addr, unsigned int flags)
+    uint64_t addr, unsigned long frame, uint64_t new_addr, unsigned int flags,
+    int *page_accessed)
 {
     struct vcpu *curr = current;
     l1_pgentry_t *pl1e, ol1e;
@@ -4153,7 +4156,7 @@ int replace_grant_host_mapping(
     }
 
     if ( !new_addr )
-        return destroy_grant_va_mapping(addr, frame, curr);
+        return destroy_grant_va_mapping(addr, frame, curr, page_accessed);
 
     pl1e = guest_map_l1e(curr, new_addr, &gl1mfn);
     if ( !pl1e )
@@ -4201,7 +4204,7 @@ int replace_grant_host_mapping(
     put_page(l1pg);
     guest_unmap_l1e(curr, pl1e);
 
-    rc = replace_grant_va_mapping(addr, frame, ol1e, curr);
+    rc = replace_grant_va_mapping(addr, frame, ol1e, curr, page_accessed);
     if ( rc && !paging_mode_refcounts(curr->domain) )
         put_page_from_l1e(ol1e, curr->domain);
 

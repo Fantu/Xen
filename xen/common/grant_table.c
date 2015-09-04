@@ -94,6 +94,7 @@ struct gnttab_unmap_common {
 
     /* Return */
     int16_t status;
+    int page_accessed;
 
     /* Shared state beteen *_unmap and *_unmap_complete */
     u16 flags;
@@ -101,6 +102,12 @@ struct gnttab_unmap_common {
     struct grant_mapping *map;
     struct domain *rd;
 };
+
+#ifndef NDEBUG
+atomic_t grant_unmap_tlb_flush_avoided;
+atomic_t grant_unmap_tlb_flush_done;
+atomic_t grant_unmap_operations;
+#endif
 
 /* Number of unmap operations that are done between each tlb flush */
 #define GNTTAB_UNMAP_BATCH_SIZE 32
@@ -1070,6 +1077,7 @@ __gnttab_unmap_common(
     ld = current->domain;
     lgt = ld->grant_table;
 
+    op->page_accessed = 0;
     op->frame = (unsigned long)(op->dev_bus_addr >> PAGE_SHIFT);
 
     if ( unlikely(op->handle >= lgt->maptrack_limit) )
@@ -1152,7 +1160,7 @@ __gnttab_unmap_common(
     {
         if ( (rc = replace_grant_host_mapping(op->host_addr,
                                               op->frame, op->new_addr, 
-                                              op->flags)) < 0 )
+                                              op->flags, &op->page_accessed)) < 0 )
             goto act_release_out;
 
         ASSERT(act->pin & (GNTPIN_hstw_mask | GNTPIN_hstr_mask));
@@ -1319,20 +1327,25 @@ static long
 gnttab_unmap_grant_ref(
     XEN_GUEST_HANDLE_PARAM(gnttab_unmap_grant_ref_t) uop, unsigned int count)
 {
-    int i, c, partial_done, done = 0;
+    int i, c, partial_done, done = 0, grant_map_accessed = 0;
     struct gnttab_unmap_grant_ref op;
     struct gnttab_unmap_common common[GNTTAB_UNMAP_BATCH_SIZE];
 
+#ifndef NDEBUG
+    atomic_inc(&grant_unmap_operations);
+#endif
     while ( count != 0 )
     {
         c = min(count, (unsigned int)GNTTAB_UNMAP_BATCH_SIZE);
         partial_done = 0;
+        grant_map_accessed = 0;
 
         for ( i = 0; i < c; i++ )
         {
             if ( unlikely(__copy_from_guest(&op, uop, 1)) )
                 goto fault;
             __gnttab_unmap_grant_ref(&op, &(common[i]));
+            grant_map_accessed |= common[i].page_accessed;
             ++partial_done;
             if ( unlikely(__copy_field_to_guest(uop, &op, status)) )
                 goto fault;
@@ -1340,7 +1353,17 @@ gnttab_unmap_grant_ref(
         }
 
         gnttab_flush_tlb(current->domain);
-
+        if ( grant_map_accessed )
+        {
+            flush_tlb_mask(current->domain->domain_dirty_cpumask);
+#ifndef NDEBUG
+            atomic_inc(&grant_unmap_tlb_flush_done);
+        }
+        else
+        {
+            atomic_inc(&grant_unmap_tlb_flush_avoided);
+#endif
+        }
         for ( i = 0; i < partial_done; i++ )
             __gnttab_unmap_common_complete(&(common[i]));
 
@@ -3454,7 +3477,12 @@ static void gnttab_usage_print_all(unsigned char key)
     printk("%s [ key '%c' pressed\n", __FUNCTION__, key);
     for_each_domain ( d )
         gnttab_usage_print(d);
+#ifndef NDEBUG
+    printk("Grant unmap tlb flush performed %i\n", atomic_read(&grant_unmap_tlb_flush_done));
+    printk("Grant unmap tlb flush avoided %i\n", atomic_read(&grant_unmap_tlb_flush_avoided));
+    printk("Grant unmap operations %i\n", atomic_read(&grant_unmap_operations));
     printk("%s ] done\n", __FUNCTION__);
+#endif
 }
 
 static struct keyhandler gnttab_usage_print_all_keyhandler = {
