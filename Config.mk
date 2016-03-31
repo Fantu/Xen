@@ -237,20 +237,20 @@ QEMU_TRADITIONAL_REVISION ?= $(QEMU_TAG)
 endif
 
 ifeq ($(GIT_HTTP),y)
-OVMF_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/ovmf.git
-QEMU_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/qemu-xen.git
+OVMF_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/osstest/ovmf.git
+QEMU_UPSTREAM_URL ?= https://github.com/Fantu/qemu.git
 QEMU_TRADITIONAL_URL ?= http://xenbits.xen.org/git-http/qemu-xen-traditional.git
 SEABIOS_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/seabios.git
 MINIOS_UPSTREAM_URL ?= http://xenbits.xen.org/git-http/mini-os.git
 else
-OVMF_UPSTREAM_URL ?= git://xenbits.xen.org/ovmf.git
-QEMU_UPSTREAM_URL ?= git://xenbits.xen.org/qemu-xen.git
+OVMF_UPSTREAM_URL ?= git://xenbits.xen.org/osstest/ovmf.git
+QEMU_UPSTREAM_URL ?= https://github.com/Fantu/qemu.git
 QEMU_TRADITIONAL_URL ?= git://xenbits.xen.org/qemu-xen-traditional.git
 SEABIOS_UPSTREAM_URL ?= git://xenbits.xen.org/seabios.git
 MINIOS_UPSTREAM_URL ?= git://xenbits.xen.org/mini-os.git
 endif
-OVMF_UPSTREAM_REVISION ?= 52a99493cce88a9d4ec8a02d7f1bd1a1001ce60d
-QEMU_UPSTREAM_REVISION ?= master
+OVMF_UPSTREAM_REVISION ?= origin/xen-tested-master
+QEMU_UPSTREAM_REVISION ?= origin/rebase/xen-unstable
 MINIOS_UPSTREAM_REVISION ?= 89268f00b0b0215057cb74edd94e866536a02489
 # Fri Jan 15 13:24:03 2016 +0000
 # mini-os: Include libxenforeignmemory with libxc
