@@ -970,6 +970,91 @@ int libxl__qmp_insert_cdrom(libxl__gc *gc, int domid,
     }
 }
 
+static int libxl__qmp_usbredir_tcpchar_add(libxl__gc *gc, int domid, int id,
+                                           const char *host, const char *port)
+{
+    libxl__json_object *args = NULL;
+    libxl__json_object *backend = NULL;
+    libxl__json_object *data = NULL;
+
+    /* 'backend': {
+     *   'type': 'socket',
+     *   'data': {
+     *     'host': '$host',
+     *     'port': '$port'
+     *   }
+     * }
+     */
+    qmp_parameters_add_string(gc, &data, "host", host);
+    qmp_parameters_add_string(gc, &data, "port", port);
+    qmp_parameters_common_add(gc, &backend, "data", data);
+    qmp_parameters_add_string(gc, &backend, "type", "socket");
+    qmp_parameters_common_add(gc, &args, "backend", backend);
+
+    QMP_PARAMETERS_SPRINTF(&args, "id", "charredir%i", id);
+
+
+    return qmp_run_command(gc, domid, "chardev-add", args, NULL, NULL);
+}
+
+static int libxl__qmp_usbredir_tcpdev_add(libxl__gc *gc, int domid, int id)
+{
+    libxl__json_object *args = NULL;
+
+    qmp_parameters_add_string(gc, &args, "driver", "usb-redir");
+    QMP_PARAMETERS_SPRINTF(&args, "chardev", "charredir%i", id);
+    QMP_PARAMETERS_SPRINTF(&args, "id", "redir%i", id);
+
+    return qmp_run_command(gc, domid, "device_add", args, NULL, NULL);
+}
+
+int libxl__qmp_usbredir_tcp_add(libxl__gc *gc, int domid, int id, 
+                                const char *host, const char *port)
+{
+    int rc;
+    rc = libxl__qmp_usbredir_tcpchar_add(gc, domid, id, host, port);
+    if (rc)
+        goto out;
+
+    rc = libxl__qmp_usbredir_tcpdev_add(gc, domid, id);
+    if (rc)
+        libxl__usbredir_tcpchar_remove(gc, domid, id);
+
+out:
+    return rc;
+}
+
+static int libxl__qmp_usbredir_tcpchar_remove(libxl__gc *gc, int domid, int id)
+{
+    libxl__json_object *args = NULL;
+
+    QMP_PARAMETERS_SPRINTF(&args, "id", "charredir%i", id);
+
+    return qmp_run_command(gc, domid, "chardev-remove", args, NULL, NULL);
+}
+
+static int libxl__qmp_usbredir_tcpdev_remove(libxl__gc *gc, int domid, int id)
+{
+    libxl__json_object *args = NULL;
+
+    QMP_PARAMETERS_SPRINTF(&args, "id", "redir%i", id);
+
+    return qmp_run_command(gc, domid, "device_del", args, NULL, NULL);
+}
+
+int libxl__qmp_usbredir_tcp_remove(libxl__gc *gc, int domid, int id)
+{
+    int rc;
+    rc = libxl__qmp_usbredir_tcpdev_remove(gc, domid, id);
+    if (rc)
+        goto out;
+
+    rc = libxl__qmp_usbredir_tcpchar_remove(gc, domid, id);
+
+out:
+    return rc;
+}
+
 int libxl__qmp_cpu_add(libxl__gc *gc, int domid, int idx)
 {
     libxl__json_object *args = NULL;
